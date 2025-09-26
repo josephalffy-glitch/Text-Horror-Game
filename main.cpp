@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 using namespace std;
+namespace fs = std::filesystem;
 
 #include "player.h"
 
@@ -24,7 +25,7 @@ void loadSave() {
     
     vector<string> saveFiles; // Array to hold save file names
     // check if there are any save files within SaveFiles directory
-    for (const auto& entry : filesystem::directory_iterator("SaveFiles")) {
+    for (const auto& entry : fs::directory_iterator("SaveFiles")) {
         saveFiles.push_back(entry.path().filename().string());
     }
 
