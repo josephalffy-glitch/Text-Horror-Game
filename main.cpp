@@ -7,15 +7,43 @@ using namespace std;
 namespace fs = std::filesystem;
 
 #include "player.h"
+#include "Day1.h"
 
 void loadSave();
+void mainMenu();
 
 int main()
 {
+    int choice = 0;
 
-    loadSave();
+    std::cout << "Welcome to the Adventure Game!" << endl;
 
-     Player Adam;
+    // Display main menu and get user choice
+    while (choice != 3) {
+        mainMenu();
+        cin >> choice;
+
+        switch (choice) {
+            case 1:
+                cout << "Starting a new game..." << endl;
+                day1(); // Call the function to start Day 1
+                break;
+            case 2:
+                loadSave();
+                break;
+            case 3:
+                cout << "Quitting the game. Goodbye!" << endl;
+                break;
+            default:
+                cout << "Invalid choice. Please try again." << endl;
+        }
+    }
+
+    return 0;
+}
+
+/*
+    Player Adam;
 	int choice;
 	vector<string> myInventory;
 
@@ -31,7 +59,15 @@ int main()
 	if (choice = 1)
 	Adam.CheckInventory(myInventory);
 	Adam.CheckInventory(myInventory);
-	return 0;
+*/
+
+// main menu
+void mainMenu() {
+    cout << "Main Menu:\n";
+    cout << "1. Start New Game\n";
+    cout << "2. Load Saved Game\n";
+    cout << "3. Quit\n";
+    cout << "Enter your choice: ";
 }
 
 // loadSave() will check for available save files.
