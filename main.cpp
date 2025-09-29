@@ -11,8 +11,26 @@ void loadSave();
 
 int main()
 {
+
     loadSave();
-    return 0;
+
+     Player Adam;
+	int choice;
+	vector<string> myInventory;
+
+	cout << "You found a mirror. . .\n> Add to Inventory? (1 = yes or 2 = no)\n";
+	cin >> choice;
+
+	if (choice == 1)
+	Adam.UpdateInventory(myInventory, "mirror");
+
+
+	cout << "open inventory?\n";
+	cin >> choice;
+	if (choice = 1)
+	Adam.CheckInventory(myInventory);
+	Adam.CheckInventory(myInventory);
+	return 0;
 }
 
 // loadSave() will check for available save files.
@@ -22,7 +40,7 @@ int main()
 // and prompt the user to select one.
 void loadSave() {
     cout << "loadSave() called" << endl;
-    
+
     vector<string> saveFiles; // Array to hold save file names
     // check if there are any save files within SaveFiles directory
     for (const auto& entry : fs::directory_iterator("SaveFiles")) {
