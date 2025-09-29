@@ -1,1 +1,4 @@
-My name is Manan, and I enjoy programming in C++
+# S2-T8
+To compile:
+make
+./final

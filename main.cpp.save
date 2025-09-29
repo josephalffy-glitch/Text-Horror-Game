@@ -1,0 +1,26 @@
+#include <iostream>
+#include <vector>
+using namespace std;
+
+#include "player.h"
+
+int main()
+{
+	Player Adam;
+	int choice;
+	vector<string> myInventory;
+
+
+	cout << "You found a mirror. . .\n> Add to Inventory? (1 = yes or 2 = no)\n";
+	cin >> choice;
+
+	if (choice == 1)
+	Adam.UpdateInventory(myInventory, "mirror");
+
+
+	cout << "open inventory?\n";
+	cin >> choice;
+	if (choice = 1)
+	Adam.CheckInventory(myInventory);
+	return 0;
+}
