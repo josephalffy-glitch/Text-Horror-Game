@@ -10,8 +10,13 @@ namespace fs = std::filesystem;
 #include "Day1.h"
 
 void loadSave();
-void mainMenu();
-
+void mainMenu() {
+    cout << "Main Menu:\n";
+    cout << "1. Start New Game\n";
+    cout << "2. Load Saved Game\n";
+    cout << "3. Quit\n";
+    cout << "Enter your choice: ";
+}
 int main()
 {
     int choice = 0;
@@ -42,33 +47,7 @@ int main()
     return 0;
 }
 
-/*
-    Player Adam;
-	int choice;
-	vector<string> myInventory;
 
-	cout << "You found a mirror. . .\n> Add to Inventory? (1 = yes or 2 = no)\n";
-	cin >> choice;
-
-	if (choice == 1)
-	Adam.UpdateInventory(myInventory, "mirror");
-
-
-	cout << "open inventory?\n";
-	cin >> choice;
-	if (choice = 1)
-	Adam.CheckInventory(myInventory);
-	Adam.CheckInventory(myInventory);
-*/
-
-// main menu
-void mainMenu() {
-    cout << "Main Menu:\n";
-    cout << "1. Start New Game\n";
-    cout << "2. Load Saved Game\n";
-    cout << "3. Quit\n";
-    cout << "Enter your choice: ";
-}
 
 // loadSave() will check for available save files.
 // If none are found, it will notify the user and return

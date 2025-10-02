@@ -12,31 +12,32 @@ Player::Player()
 	eyes = "unknown";
 	inventory.fill("");
 }
+
 // parameterized constructor for loading saved player
-Player::Player(string n, string h, string e, array<string, 5> inv)
+Player::Player(string name, string hair, string eyes, array<string, 5> inventory)
 {
-	name = n;
-	hair = h;
-	eyes = e;
-	inventory = inv;
+	this->name = name;
+	this->hair = hair;
+	this->eyes = eyes;
+	this->inventory = inventory;
 }
 
 // setters ......................................
-void Player::setName(string n)
+void Player::setName(string name)
 {
-	name = n;
+	this->name = name;
 }
-void Player::setHair(string h)
+void Player::setHair(string hair)
 {
-	hair = h;
+	this->hair = hair;
 }
-void Player::setEyes(string e)
+void Player::setEyes(string eyes)
 {
-	eyes = e;
+	this->eyes = eyes;
 }
-void Player::setInventory(array<string, 5> inv)
+void Player::setInventory(array<string, 5> inventory)
 {
-	inventory = inv;
+	this->inventory = inventory;
 }
 
 // getters ......................................
@@ -68,22 +69,22 @@ void Player::checkHealth()
 }
 void Player::checkInventory()
 {
-	cout << "Inventory:\n";
+	cout << "\nInventory:\n";
 
 	for(int i = 0; i < inventory.size(); i++)
 	{
 		cout << i + 1 << ": " << inventory[i] << "\n";
 	}
 }
-void Player::addToInventory(array<string, 5>& Inventory, string item)
+void Player::addToInventory(string item)
 {
 	bool inventoryFull = true;
 
 	//check if inventory is full
-	for(int i = 0; i < Inventory.size(); i++)
+	for(int i = 0; i < inventory.size(); i++)
 	{
-		if(Inventory[i] == "")
-		{
+		if(inventory[i] == "")
+		{	
 			inventoryFull = false;
 			break;
 		}
@@ -91,14 +92,16 @@ void Player::addToInventory(array<string, 5>& Inventory, string item)
 
 	//if full, notify user and return
 	if(inventoryFull) {
-		cout << "Inventory full. Cannot add " << item << ".\n";
+		cout << "\nInventory full. Cannot add " << item << ".\n";
 		return;
 	} else {
 		//add item to first empty slot
-		for(int i = 0; i < Inventory.size(); i++) {
-			if(Inventory[i] == "") {
-				Inventory[i] = item;
-				cout << item << " added to inventory.\n";
+		for(int i = 0; i < inventory.size(); i++) 
+		{
+			if(inventory[i] == "") 
+			{
+				inventory[i] = item;
+				cout << "\n"<< item << " added to inventory.\n";
 				return;
 			}
 		}
