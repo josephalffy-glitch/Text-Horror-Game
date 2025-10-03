@@ -8,7 +8,7 @@ using namespace std;
 #include "player.h"
 
 void bedroomMenu() {
-    cout << "\nYou are in you bedroom.";
+    cout << "\nYou are in your bedroom.";
     cout << "\nwhat would you like to do?\n";
     cout << "1. lie down on the bed and rest\n";
     cout << "2. look in the drawer\n";
