@@ -2,7 +2,8 @@ final:
 	g++ player.cpp main.cpp -o Game.exe
 
 run:
-	Game.exe
+	g++ player.cpp main.cpp -o Game.exe
+	./Game.exe
 
 clean:
 	rm -f *.o *.exe Game.exe *.gch || del /Q *.o *.exe *.gch
