@@ -6,15 +6,15 @@ using namespace std;
 Room::Room() {
     name = "unknown";
     description = "unknown";
-    items = {};
+    storageLocations = {};
     visited = false;
 }
 
 // parameterized constructor
-Room::Room(string name, string description, vector<string> items, bool visited) {
+Room::Room(string name, string description, vector<StorageLocation> storageLocations, bool visited) {
     this->name = name;
     this->description = description;
-    this->items = items;
+    this->storageLocations = storageLocations;
     this->visited = visited;
 }
 
@@ -27,8 +27,17 @@ string Room::getDescription() {
     return description;
 }
 
-vector<string> Room::getItems() {
-    return items;
+vector<StorageLocation> Room::getStorageLocations() {
+    return storageLocations;
+}
+
+vector<string> Room::getItemsInLocation(string locationName) {
+    for (const auto& location : storageLocations) {
+        if (location.name == locationName) {
+            return location.items;
+        }
+    }
+    return vector<string>();
 }
 
 bool Room::isVisited() {
@@ -44,8 +53,33 @@ void Room::setDescription(string description) {
     this->description = description;
 }
 
-void Room::setItems(vector<string> items) {
-    this->items = items;
+void Room::addStorageLocation(string locationName) {
+    StorageLocation newLocation;
+    newLocation.name = locationName;
+    newLocation.items = {};
+    storageLocations.push_back(newLocation);
+}
+
+void Room::addItemToLocation(string locationName, string item) {
+    for (auto& location : storageLocations) {
+        if (location.name == locationName) {
+            location.items.push_back(item);
+            return;
+        }
+    }
+}
+
+void Room::removeItemFromLocation(string locationName, string item) {
+    for (auto& location : storageLocations) {
+        if (location.name == locationName) {
+            for (auto it = location.items.begin(); it != location.items.end(); ++it) {
+                if (*it == item) {
+                    location.items.erase(it);
+                    return;
+                }
+            }
+        }
+    }
 }
 
 void Room::setVisited(bool visited) {
