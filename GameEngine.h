@@ -16,10 +16,13 @@ class GameEngine {
         Player* player; // Pointer to the player object for reference and manipulation
         vector<Room>* rooms; // Pointer to a vector of Room objects
 
-    public:
-        // Constructor and Destructor
+        // Private constructor
         GameEngine();
         ~GameEngine();
+
+    public:
+        // Singleton instance
+        static GameEngine& getInstance();
 
         // Game Initialization
         void startNewGame();
