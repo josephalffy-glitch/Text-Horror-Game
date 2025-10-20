@@ -1,3 +1,4 @@
+//thee updated Day1.h 
 #ifndef DAY1_H
 #define DAY1_H
 
@@ -14,7 +15,8 @@ void bedroomMenu() {
     cout << "2. look in the drawer\n";
     cout << "3. check out the trophy\n";
     cout << "4. look at your inventory\n";
-    cout << "5. quit the adventure\n";
+    cout << "5. Go to the kitchen\n"; // an option to move to the next scene
+    cout << "6. quit the adventure\n"; // quit is now number6
     cout << "enter your choice: ";
 }
 
@@ -37,10 +39,10 @@ void trophy(string name) {
 }
 void kitchenMenu()
 {
-
     cout << "\n1. eat your food\n";
     cout << "2. ask your mom about her hand\n";
     cout << "3. get more syrup for your waffles\n";
+    cout << "4. Leave the kitchen\n"; // lets them leave the kitchen
     cout << "Enter your choice: ";
 }
 
@@ -54,12 +56,11 @@ void kitchenCab()
     cout << "3. Grab the salt\n";
     cout << "4. Grab a cookie\n";
     cout << "5. look at your inventory\n";
-
     cout << "enter your choice: ";
 }
 
 
-int day1() 
+int day1()
 {
     string name, hair, eyes;
     // greet player and get info
@@ -79,10 +80,12 @@ int day1()
     player.setInventory(startInv);
 
     int choice;
-    bool playing = false; //true;
+    // gotta set this to true so the game actually starts
+    bool playing = true;
 
     while (playing) {
-        //bedroomMenu();
+        // show the player their options
+        bedroomMenu();
         cin >> choice;
         cin.ignore();
 
@@ -113,16 +116,21 @@ int day1()
             case 4:
                 player.checkInventory();
                 break;
+            // for moving to the kitchen
             case 5:
+                cout << ">> Mom: Sweetie! Breakfeast is ready!\n";
+                cout << "She has always called you that. It's a little embarrassing, but mostly endearing\n";
+                cout << ">> " << name << ": I'm coming!\n";
+                playing = false; // this is how we get out of the bedroom loop
+                break;
+            // for quitting the game
+            case 6:
                 cout << "Thanks for playing, " << player.getName() << "! See you next time.\n";
                 playing = false;
-                break;
+                return 0; // exit the whole program
             default:
                 cout << "Hmm, that doesn't seem right. Try picking a number from the list.\n";
         }
-        cout << ">> Mom: Sweetie! Breakfeast is ready!\n";
-        cout << "She has always called you that. It's a little embarrassin, but mostly endearing\n";
-        cout << ">> " << name << ": I'm coming!";
     }
 
     bool inKitchen = true;
@@ -131,8 +139,7 @@ int day1()
     cout << "Your mom turns around with a plate of waffles drenched in syrup.\n";
     cout << "As your mom sets the plate on the dining table you take a notice of her right hand.\nIt's bandaged up.\n";
     while(inKitchen)
-    {   
-
+    {
         kitchenMenu();
         cin >> choice;
 
@@ -146,54 +153,52 @@ int day1()
                 cout << ">> Mom: Oh! I was just cleaning the basement and touched some broken glass. No big deal sweetie.\n";
                 break;
             case 3:
-                int choice2;
-                kitchenCab();
-                bool inCab = true;
-                while(inCab)
-                {
-                    cin >> choice2;
-                    if (choice2 == 1)
+                { // brackets to keep these variables from interfering
+                    int choice2;
+                    kitchenCab();
+                    bool inCab = true;
+                    while(inCab)
                     {
-                        cout << "\nNot sure what I would use cornstarch for right now...let's put it back.\n";
-                        break;
+                        cin >> choice2;
+                        // a switch is just a bit cleaner here
+                        switch(choice2) {
+                            case 1:
+                                cout << "\nNot sure what I would use cornstarch for right now...let's put it back.\n";
+                                inCab = false; break;
+                            case 2:
+                                cout << "\nPerfect!\n";
+                                player.addToInventory("syrup");
+                                inCab = false; break;
+                            case 3:
+                                cout << "\nNot sure if I want salty waffles...let's put it back.\n";
+                                inCab = false; break;
+                            case 4:
+                                cout << "\nI really shouldn't...I'm sure mom won't mind.\n";
+                                player.addToInventory("cookie");
+                                inCab = false; break;
+                            case 5:
+                                player.checkInventory();
+                                kitchenCab(); // show menu again so they can pick something else
+                                break;
+                            default:
+                                cout << "\nInvalid choice\n";
+                                inCab = false; break;
+                        }
                     }
-                    if (choice2 == 2)
-                    {
-                        cout << "\nPerfect!\n";
-                        player.addToInventory("syrup");
-                        break;
-                    }
-                    if (choice2 == 3)
-                    {
-                        cout << "\nNot sure if I want salty waffles...let's put it back.\n";
-                        break;
-                    }
-                    if (choice2 == 4)
-                    {
-                        cout << "\nI really shouldn't...I'm sure mom won't mind.\n";
-                        player.addToInventory("cookie");
-                        break;
-                    }
-                    if (choice2 == 5)
-                    {
-                        player.checkInventory();
-                        break;
-                    }
-                    else
-                    {
-                        cout << "\nInvalid choice";
-                        break;
-                    }
-                    }
-
                 }
-
-                
-
+                break;
+            // for leaving the kitchen
+            case 4:
+                cout << "\nYou finish breakfast and get ready for the day.\n";
+                inKitchen = false; // this ends the kitchen loop
+                break;
         }
-        return 0;
-
     }
+
+    // moved this outside the loop so the game doesn't end after one action
+    cout << "\nDay 1 has concluded. To be continued...\n";
+    return 0;
+}
 
 
 #endif // DAY1_H
