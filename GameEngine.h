@@ -6,7 +6,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include "Player.h"
+#include "player.h"
 #include "Room.h"
 
 using namespace std;
