@@ -8,6 +8,7 @@ namespace fs = std::filesystem;
 
 #include "player.h"
 #include "Day1.h"
+#include "GameEngine.h"
 
 void loadSave();
 void mainMenu() {
@@ -19,9 +20,11 @@ void mainMenu() {
 }
 int main()
 {
+    GameEngine engine;
     int choice = 0;
 
-    std::cout << "Welcome to the Adventure Game!" << endl;
+    engine.printArt("TitleScreen");
+    std::cout << "Welcome." << endl;
 
     // Display main menu and get user choice
     while (choice != 3) {

@@ -1,5 +1,7 @@
 #ifndef GAME_ENGINE_H
 #define GAME_ENGINE_H
+#include <fstream>
+#include <sstream>
 // GameEngine serves as the main controller for the game flow
 // It manages the game state, player interactions, and transitions between different game scenes.
 
@@ -17,8 +19,8 @@ class GameEngine {
         vector<Room>* rooms; // Pointer to a vector of Room objects
 
         // Private constructor
-        GameEngine();
-        ~GameEngine();
+        //GameEngine();
+        //~GameEngine();
 
     public:
         // Singleton instance
@@ -28,6 +30,9 @@ class GameEngine {
         void startNewGame();
         void loadGame(const string& saveFile);
         void saveGame(const string& saveFile);
+
+        //ASCII Generation
+        void printArt(const string& image);
 
         // Game Loop
         Player* getPlayer();
