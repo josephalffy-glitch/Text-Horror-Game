@@ -8,7 +8,8 @@ enum class ItemType {
     FOOD,
     BANDAGE,
     KEY,
-    MISC
+    MISC,
+    NULLITEM
 };
 
 class Item {
@@ -18,7 +19,7 @@ class Item {
         int healAmount;
 
     public:
-        Item(string name, ItemType type, int heal = 0)
+        Item(string name = "", ItemType type = ItemType::NULLITEM, int heal = 0)
             : itemName(name), itemType(type), healAmount(heal) {}
 
         string getName() const {

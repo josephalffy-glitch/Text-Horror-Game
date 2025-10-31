@@ -7,6 +7,7 @@
 #include <array>
 using namespace std;
 #include "player.h"
+#include "Items.h"
 
 void bedroomMenu() {
     cout << "\nYou are in your bedroom.";
@@ -75,9 +76,10 @@ int day1()
     cin >> eyes;
 
     // create player
-    array<string, 5> startInv;
-    Player player = Player(name, hair, eyes, startInv);
-    player.setInventory(startInv);
+    Player player = Player();
+    player.setName(name);
+    player.setHair(hair);
+    player.setEyes(eyes);
 
     int choice;
     // gotta set this to true so the game actually starts
@@ -97,17 +99,20 @@ int day1()
                 mirror();
                 int choice2;
                 cin >> choice2;
+                
                 if (choice2 == 1)
                 {
                     cout << "\nYou open the mirror and see a familar face.\nYour " << player.getEyes() << " eyes are staring back at you and your ";
                     cout << player.getHair() << " hair is framing your face.";
                     cout << " You decide to hold on to the mirror. It could come in handy.\n";
-                    player.addToInventory("mirror");
+                    Item mirror = Item("mirror", ItemType::MISC, 0);
+                    player.addToInventory(mirror);
                 }
                 if (choice2 == 2)
                 {
                     cout << "Before you close the drawer you take the mirror with you.\n";
-                    player.addToInventory("mirror");
+                    Item mirror = Item("mirror", ItemType::MISC, 0);
+                    player.addToInventory(mirror);
                 }
                 break;
             case 3:
@@ -162,27 +167,35 @@ int day1()
                         cin >> choice2;
                         // a switch is just a bit cleaner here
                         switch(choice2) {
-                            case 1:
+                            case 1: {
                                 cout << "\nNot sure what I would use cornstarch for right now...let's put it back.\n";
                                 inCab = false; break;
-                            case 2:
+                            }
+                            case 2: {
                                 cout << "\nPerfect!\n";
-                                player.addToInventory("syrup");
+                                Item syrup = Item("syrup", ItemType::FOOD, 1);
+                                player.addToInventory(syrup);
                                 inCab = false; break;
-                            case 3:
+                            }
+                            case 3: {
                                 cout << "\nNot sure if I want salty waffles...let's put it back.\n";
                                 inCab = false; break;
-                            case 4:
+                            }
+                            case 4: {
                                 cout << "\nI really shouldn't...I'm sure mom won't mind.\n";
-                                player.addToInventory("cookie");
+                                Item cookie = Item("cookie", ItemType::FOOD, 2);
+                                player.addToInventory(cookie);
                                 inCab = false; break;
-                            case 5:
+                            }
+                            case 5: {
                                 player.checkInventory();
                                 kitchenCab(); // show menu again so they can pick something else
                                 break;
-                            default:
+                            }
+                            default: {
                                 cout << "\nInvalid choice\n";
                                 inCab = false; break;
+                            }
                         }
                     }
                 }

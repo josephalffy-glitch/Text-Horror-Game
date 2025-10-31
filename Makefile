@@ -1,8 +1,8 @@
 final:
-	g++ player.cpp main.cpp GameEngine.cpp -o Game.exe
+	g++ player.cpp Room.cpp main.cpp GameEngine.cpp -o Game.exe
 
 run:
-	g++ player.cpp main.cpp GameEngine.cpp -o Game.exe
+	g++ player.cpp Room.cpp main.cpp GameEngine.cpp -o Game.exe
 	./Game.exe
 
 clean:
