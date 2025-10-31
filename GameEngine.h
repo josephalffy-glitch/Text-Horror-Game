@@ -10,6 +10,7 @@
 #include <vector>
 #include "player.h"
 #include "Room.h"
+#include "Items.h"
 
 using namespace std;
 

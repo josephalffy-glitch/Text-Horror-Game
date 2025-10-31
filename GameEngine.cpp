@@ -4,6 +4,7 @@
 #include "player.h"
 #include "Room.h"
 #include "GameEngine.h"
+#include "Items.h"
 
 using namespace std;
 
