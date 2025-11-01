@@ -20,7 +20,7 @@ class GameEngine {
         vector<Room>* rooms; // Pointer to a vector of Room objects
 
         // Private constructor
-        //GameEngine();
+        GameEngine();
         //~GameEngine();
 
     public:

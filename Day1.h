@@ -8,6 +8,7 @@
 using namespace std;
 #include "player.h"
 #include "Items.h"
+#include "GameEngine.h"
 
 void bedroomMenu() {
     cout << "\nYou are in your bedroom.";
@@ -63,8 +64,15 @@ void kitchenCab()
 
 int day1()
 {
-    string name, hair, eyes;
+    // get the game engine instance
+    GameEngine& engine = GameEngine::getInstance();
+
+    // get the player reference
+    Player* playerPtr = engine.getPlayer();
+    Player& player = *playerPtr;
+
     // greet player and get info
+    string name, hair, eyes;
     cout << "welcome adventurer! let's set up your character.\n";
     cout << "what's your name? \n";
     cin >> name;
@@ -76,7 +84,6 @@ int day1()
     cin >> eyes;
 
     // create player
-    Player player = Player();
     player.setName(name);
     player.setHair(hair);
     player.setEyes(eyes);

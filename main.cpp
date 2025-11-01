@@ -20,7 +20,8 @@ void mainMenu() {
 }
 int main()
 {
-    GameEngine engine;
+    // get the game engine instance
+    GameEngine& engine = GameEngine::getInstance();
     int choice = 0;
 
     engine.printArt("TitleScreen");
