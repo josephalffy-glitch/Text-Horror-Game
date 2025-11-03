@@ -1,11 +1,11 @@
 final:
-	g++ player.cpp main.cpp GameEngine.cpp -o Game.exe
+g++ player.cpp main.cpp GameEngine.cpp PowerMeterMinigame.cpp -o Game.exe -pthread
 
 run:
-	g++ player.cpp main.cpp GameEngine.cpp -o Game.exe
-	./Game.exe
+g++ player.cpp main.cpp GameEngine.cpp PowerMeterMinigame.cpp -o Game.exe -pthread
+./Game.exe
 
 clean:
-	rm -f *.o *.exe Game.exe *.gch || del /Q *.o *.exe *.gch
+rm -f *.o *.exe Game.exe *.gch || del /Q *.o *.exe *.gch
 
 .PHONY: final run clean
