@@ -2,130 +2,96 @@
 #include <iostream>
 #include <string>
 #include <thread>
-#include <chrono> // for time like milliseconds
 #include <cstdlib>
 #include <ctime>
+#include <chrono> // added for time units
 
 using namespace std;
 
 #ifdef _WIN32
 #include <conio.h>
 #else
-// headers for keyboard input on mac/linux
+// this is only for mac since i work on mac
 #include <unistd.h>
 #include <termios.h>
 #endif
-// check if a key is pressed on mac/linux
-#ifndef _WIN32
-bool PowerMeterMinigame::keyPressed() {
-    struct termios oldt, newt;
-    int bytesRead;
-    char ch;
-    // save terminal settings
-    tcgetattr(STDIN_FILENO, &oldt);
-    // change terminal settings so we can read one key press
-    newt = oldt;
-    newt.c_lflag &= ~(ICANON | ECHO);
-    tcsetattr(STDIN_FILENO, TCSANOW, &newt);
-    // see if a key was actually pressed
-    bytesRead = read(STDIN_FILENO, &ch, 1);
 
-    //put terminal settings back to normal
-    tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
-    
-    return bytesRead > 0; 
-}
-#endif
-// check if a key is pressed on windows
-#ifdef _WIN32
+// function to check if a key has been pressed
 bool PowerMeterMinigame::keyPressed() {
+#ifdef _WIN32
     if (_kbhit()) {
-        _getch(); //eat the keypress so it doesn't show up
+        _getch();
         return true;
     }
     return false;
+#else
+    // mac input logic
+    struct termios oldt, newt;
+    int bytesRead;
+    char ch;
+    // save old terminal settings
+    tcgetattr(STDIN_FILENO, &oldt);
+    newt = oldt;
+    // disable canonical mode (buffering) and echo
+    newt.c_lflag &= ~(ICANON | ECHO);
+    // apply new settings
+    tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+    // try to read one byte
+    bytesRead = read(STDIN_FILENO, &ch, 1);
+    // restore old settings
+    tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+    return bytesRead > 0;
+#endif
 }
-#endif // _WIN32
+
+// constructor to set up game variables
 PowerMeterMinigame::PowerMeterMinigame() {
-    // set up random numbers and the meter size
-    srand(time(NULL)); 
+    // initialize random seed
+    srand(time(NULL));
     meterWidth = 50;
     gameSpeedMs = 60;
     targetZoneWidth = 6;
-    // find a random spot for the target zone
-    targetZoneStart = 3 + (rand() % (meterWidth - targetZoneWidth - 6)); 
+    // calculate a random starting position for the target zone
+    targetZoneStart = 3 + (rand() % (meterWidth - targetZoneWidth - 6));
     targetZoneEnd = targetZoneStart + targetZoneWidth;
     cursorPosition = 0;
-    direction = 1;
+    direction = 1; // start moving right
 }
 
+// main game loop
 bool PowerMeterMinigame::run() {
-    cout << "\n\n  [status] starting auxiliary power calibration...\n";
-    
-#ifndef _WIN32
-    // set up the terminal for the game loop (mac/linux)
-    struct termios oldt, newt;
-    tcgetattr(STDIN_FILENO, &oldt);
-    newt = oldt;
-    newt.c_lflag &= ~(ICANON | ECHO);
-    tcsetattr(STDIN_FILENO, TCSANOW, &newt);
-#endif
+    // print initial message
+    cout << "\n\n  --- power surge detected ---\n";
+    cout << "  you run to the fuse box! stabilize the meter!\n";
+    this_thread::sleep_for(std::chrono::seconds(1)); // fixed with std::chrono::
 
-    bool stopped = false;
-    while (!stopped) {
-        if (keyPressed()) {
-            stopped = true; 
-        }
-        
-        if (!stopped) {
-            update();
-            display();
-            // wait for next frame
-            this_thread::sleep_for(milliseconds(gameSpeedMs));
-        }
+    while (true) {
+        // game ends when any key is pressed
+        if (keyPressed()) break; 
+        update();
+        display();
+        // pause for game speed
+        this_thread::sleep_for(std::chrono::milliseconds(gameSpeedMs)); // fixed with std::chrono::
     }
-#ifndef _WIN32
-    // put the terminal back to normal after the loop
-    tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
-#endif
 
     bool win = checkWinCondition(cursorPosition);
-    // clear the screen for the end message
-#ifdef _WIN32
-    system("cls");
-#else
-    system("clear");
-#endif
-
-    cout << "\n------------------------------------------------\n";
-    cout << "  auxiliary power control (stopped at: " << cursorPosition << ")\n";
-    cout << "  ";
-    // draw the meter one last time
-    for (int i = 0; i < meterWidth; ++i)
-        cout << ((i >= targetZoneStart && i < targetZoneEnd) ? "=" : "-");
-    cout << "\n  ";
-    for (int i = 0; i < cursorPosition; ++i) cout << " ";
-    cout << "^\n";
-    
-    cout << "\n  >> " << (win ? "success! power is back online." 
-                              : "failure: a power surge was detected.") << " <<\n";
-    cout << "------------------------------------------------\n";
-    
-    // wait abit before continuing
-    this_thread::sleep_for(seconds(2));
-    
+    cout << "\n\n  >> " << (win ? "nice! power is back online." 
+                              : "ah, missed it. a power surge was detected.") << " <<\n";
+    // pause before exiting
+    this_thread::sleep_for(std::chrono::seconds(2)); // fixed with std::chrono::
     return win;
 }
 
+// moves the cursor and handles boundary reversal
 void PowerMeterMinigame::update() {
     cursorPosition += direction;
-    //change direction if the cursor hits the edge
     if (cursorPosition <= 0 || cursorPosition >= meterWidth)
-        direction *= -1;
+        direction *= -1; // reverse direction
 }
 
+// draws the game display in the console
 void PowerMeterMinigame::display() {
-    // clear screen for animation so it looks smooth
+// clear the screen for animation
 #ifdef _WIN32
     system("cls");
 #else
@@ -133,21 +99,21 @@ void PowerMeterMinigame::display() {
 #endif
 
     cout << "\n\n";
-    cout << "      [=== auxiliary power control ===]\n\n";
-    cout << "  goal: stop the cursor (^) inside the '=' zone! press any key!\n\n";
+    cout << "      [=== AUXILIARY POWER CONTROL ===]\n\n";
+    cout << "  goal: stop the cursor (^) inside the '=' zone!\n\n";
 
     cout << "  [";
-    // draw the meter bar
+    // draw the meter bar with '-' for empty and '=' for target zone
     for (int i = 0; i < meterWidth; ++i)
         cout << ((i >= targetZoneStart && i < targetZoneEnd) ? "=" : "-");
     cout << "]\n  ";
 
-    //draw the cursor (^)
-    for (int i = 0; i < cursorPosition; ++i) cout << " ";
+    // draw the cursor (^) at its current position
+    for (int i = 0; i <= cursorPosition; ++i) cout << " ";
     cout << "^\n\n  [status] press any key to stop the cursor.\n";
 }
 
+// checks if the final cursor position is within the target zone
 bool PowerMeterMinigame::checkWinCondition(int finalPosition) {
-    // check if the cursor stopped in the target area
     return finalPosition >= targetZoneStart && finalPosition < targetZoneEnd;
 }
