@@ -14,6 +14,13 @@ using namespace std;
 // this is only for mac since i work on mac
 #include <unistd.h>
 #include <termios.h>
+#include <fcntl.h> // added for non-blocking input
+#endif
+
+// global variables for mac terminal state, must be used outside functions
+#ifndef _WIN32
+struct termios old_termios, new_termios;
+int old_fcntl;
 #endif
 
 // function to check if a key has been pressed
@@ -26,20 +33,11 @@ bool PowerMeterMinigame::keyPressed() {
     return false;
 #else
     // mac input logic
-    struct termios oldt, newt;
-    int bytesRead;
     char ch;
-    // save old terminal settings
-    tcgetattr(STDIN_FILENO, &oldt);
-    newt = oldt;
-    // disable canonical mode (buffering) and echo
-    newt.c_lflag &= ~(ICANON | ECHO);
-    // apply new settings
-    tcsetattr(STDIN_FILENO, TCSANOW, &newt);
-    // try to read one byte
-    bytesRead = read(STDIN_FILENO, &ch, 1);
-    // restore old settings
-    tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+    // try to read one byte without blocking
+    int bytesRead = read(STDIN_FILENO, &ch, 1);
+    
+    // if a byte was read, it means a key was pressed
     return bytesRead > 0;
 #endif
 }
@@ -60,10 +58,32 @@ PowerMeterMinigame::PowerMeterMinigame() {
 
 // main game loop
 bool PowerMeterMinigame::run() {
+    // --- MAC/LINUX TERMINAL SETUP START ---
+#ifndef _WIN32
+    // 1. save old terminal settings
+    tcgetattr(STDIN_FILENO, &old_termios);
+    new_termios = old_termios;
+    
+    // 2. set new settings for unbuffered input:
+    // disable canonical mode (buffering) and echo
+    new_termios.c_lflag &= ~(ICANON | ECHO);
+    // set min characters and timeout
+    new_termios.c_cc[VMIN] = 0;
+    new_termios.c_cc[VTIME] = 0;
+    
+    // apply new settings
+    tcsetattr(STDIN_FILENO, TCSANOW, &new_termios);
+    
+    // 3. set stdin to non-blocking mode
+    old_fcntl = fcntl(STDIN_FILENO, F_GETFL, 0);
+    fcntl(STDIN_FILENO, F_SETFL, old_fcntl | O_NONBLOCK);
+#endif
+    // --- MAC/LINUX TERMINAL SETUP END ---
+
     // print initial message
     cout << "\n\n  --- power surge detected ---\n";
     cout << "  you run to the fuse box! stabilize the meter!\n";
-    this_thread::sleep_for(std::chrono::seconds(1)); // fixed with std::chrono::
+    this_thread::sleep_for(std::chrono::seconds(1)); 
 
     while (true) {
         // game ends when any key is pressed
@@ -71,14 +91,23 @@ bool PowerMeterMinigame::run() {
         update();
         display();
         // pause for game speed
-        this_thread::sleep_for(std::chrono::milliseconds(gameSpeedMs)); // fixed with std::chrono::
+        this_thread::sleep_for(std::chrono::milliseconds(gameSpeedMs));
     }
+    
+    // --- MAC/LINUX TERMINAL TEARDOWN START ---
+#ifndef _WIN32
+    // restore original terminal settings
+    tcsetattr(STDIN_FILENO, TCSANOW, &old_termios);
+    // restore original fcntl settings
+    fcntl(STDIN_FILENO, F_SETFL, old_fcntl);
+#endif
+    // --- MAC/LINUX TERMINAL TEARDOWN END ---
 
     bool win = checkWinCondition(cursorPosition);
     cout << "\n\n  >> " << (win ? "nice! power is back online." 
                               : "ah, missed it. a power surge was detected.") << " <<\n";
     // pause before exiting
-    this_thread::sleep_for(std::chrono::seconds(2)); // fixed with std::chrono::
+    this_thread::sleep_for(std::chrono::seconds(2)); 
     return win;
 }
 
