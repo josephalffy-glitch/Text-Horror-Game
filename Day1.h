@@ -9,6 +9,30 @@ using namespace std;
 #include "player.h"
 #include "Items.h"
 #include "GameEngine.h"
+#include "PowerMeterMinigame.h" // include the minigame header
+
+//function to handle the power outage event
+void powerOutageEvent()
+{
+    cout << "\n------------------------------------------------\n";
+    cout << "a sudden darkness envelops the kitchen. the lights flicker and die.\n";
+    cout << ">> mom: oh no, the power must be out! i hate when that happens.\n";
+    cout << "you hear a strange humming sound from the basement door.\n";
+    cout << ">> mom: honey, can you go check the auxiliary power unit down in the cellar?\n";
+    cout << "it looks like you have to fix the power meter to continue!\n";
+    cout << "------------------------------------------------\n\n";
+
+    PowerMeterMinigame powerGame;
+    // run the minigame
+    bool success = powerGame.run();
+
+    if (success) {
+        cout << "\n>> mom: that's my kid! the lights are back on. thanks, sweetie!\n";
+    } else {
+        cout << "\n>> mom: well, the lights are back on, but that was a bit rough. maybe be more careful next time!\n";
+    }
+    cout << "\n------------------------------------------------\n";
+}
 
 void bedroomMenu() {
     cout << "\nYou are in your bedroom.";
@@ -214,11 +238,13 @@ int day1()
                 break;
         }
     }
+    
+    // call the minigame event here before day 1 ends
+    powerOutageEvent();
 
     // moved this outside the loop so the game doesn't end after one action
     cout << "\nDay 1 has concluded. To be continued...\n";
     return 0;
 }
-
 
 #endif // DAY1_H
