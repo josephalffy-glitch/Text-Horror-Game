@@ -6,6 +6,6 @@ run:
 	./Game.exe
 
 clean:
-rm -f *.o *.exe Game.exe *.gch || del /Q *.o *.exe *.gch
+	rm -f *.o *.exe Game.exe *.gch || del /Q *.o *.exe *.gch
 
 .PHONY: final run clean
