@@ -7,12 +7,19 @@
 
 using namespace std;
 
-void GameEngine::printArt(const string& image)
+#include <fstream>
+#include <sstream> // for stringstream
+#include <string>
+using namespace std;
+
+string GameEngine::printArt(const string& image)
 {
-    ifstream file("ASCII.txt"); //open file
+    ifstream file("ASCII.txt");
+    if (!file.is_open()) return "ASCII art file not found.";
 
     string line;
-    bool correctSection;
+    bool correctSection = false;
+    stringstream art; // store all lines
 
     while (getline(file, line))
     {
@@ -21,16 +28,18 @@ void GameEngine::printArt(const string& image)
             correctSection = true;
             continue;
         }
-        if (correctSection && line.rfind("#", 0) == 0)
+        if (correctSection && line.rfind("#", 0) == 0) // next section
         {
             break;
         }
-        if(correctSection)
+        if (correctSection)
         {
-            cout << line << endl;
+            art << line << "\n"; // append line to stringstream
         }
     }
 
-    file.close(); // close file
+    file.close();
+    return art.str();
 }
+
 // Needs implementation of GameEngine methods
