@@ -35,5 +35,6 @@ class Player
         void checkHealth();
         void checkInventory();
         void addToInventory(string item);
+        void clearInventory();
 };
 #endif

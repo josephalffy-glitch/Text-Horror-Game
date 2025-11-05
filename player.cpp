@@ -107,3 +107,10 @@ void Player::addToInventory(string item)
 		}
 	}
 }
+void Player::clearInventory()
+{
+	for(int i = 0; i < inventory.size(); i++)
+	{
+		inventory[i] = "";
+	}
+}
