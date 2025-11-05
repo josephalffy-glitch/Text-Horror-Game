@@ -9,6 +9,8 @@
 #include "player.h"
 #include "GameEngine.h"
 
+using namespace std;
+
 // Forward declare GLFW error callback
 static void glfw_error_callback(int error, const char* description);
 
@@ -58,7 +60,7 @@ int main(int, char**)
     };
 
     // ASCII art display
-    std::string currentArt;
+    string currentArt;
 
     // -------------------- Character creation --------------------
     static char nameBuffer[128] = "";
