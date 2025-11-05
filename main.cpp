@@ -5,11 +5,10 @@
 #include <GLFW/glfw3.h>
 #include <string>
 #include <vector>
+#include <sstream>
 #include <iostream>
 #include "player.h"
 #include "GameEngine.h"
-
-using namespace std;
 
 // Forward declare GLFW error callback
 static void glfw_error_callback(int error, const char* description);
@@ -26,8 +25,7 @@ int main(int, char**)
 {
     // -------------------- GLFW / OpenGL setup --------------------
     glfwSetErrorCallback(glfw_error_callback);
-    if (!glfwInit())
-        return 1;
+    if (!glfwInit()) return 1;
 
     const char* glsl_version = "#version 130";
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -60,7 +58,7 @@ int main(int, char**)
     };
 
     // ASCII art display
-    string currentArt;
+    std::string currentArt;
 
     // -------------------- Character creation --------------------
     static char nameBuffer[128] = "";
@@ -68,14 +66,10 @@ int main(int, char**)
     static char eyesBuffer[64] = "";
     static bool playerCreated = false;
 
-    // Inventory buttons need unique IDs
-    int inventoryButtonID = 0;
-
     // -------------------- Main loop --------------------
     while (!glfwWindowShouldClose(window))
     {
         glfwPollEvents();
-
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
@@ -95,7 +89,6 @@ int main(int, char**)
                 playerCreated = true;
                 push_log("Player created!");
             }
-
             ImGui::End();
 
             ImGui::Render();
@@ -106,62 +99,99 @@ int main(int, char**)
             glClear(GL_COLOR_BUFFER_BIT);
             ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
             glfwSwapBuffers(window);
-
             continue; // skip the rest of the loop until player is created
         }
-
-        // -------------------- Rooms panel --------------------
-        ImGui::Begin("Rooms", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_AlwaysAutoResize);
-        if (ImGui::Button("Bedroom")) currentRoom = ROOM_BEDROOM;
-        if (ImGui::Button("Kitchen")) currentRoom = ROOM_KITCHEN;
-        if (ImGui::Button("Living Room")) currentRoom = ROOM_LIVING;
-        ImGui::End();
 
         // -------------------- Scene panel --------------------
         ImGui::Begin("Scene", nullptr, ImGuiWindowFlags_NoCollapse);
 
-        // Bedroom actions
-        if (currentRoom == ROOM_BEDROOM) {
-            ImGui::TextWrapped("You are in your bedroom.");
-            if (ImGui::Button("Lie down on the bed and rest")) {
-                player.updateHealth("rest");
-                push_log("You rested on the bed. (health updated)");
-            }
-            if (ImGui::Button("Look in the drawer")) {
-                player.addToInventory("Old Key");
-                push_log("You found an Old Key and added it to your inventory.");
-            }
-            if (ImGui::Button("Check out the trophy")) {
-                push_log("The trophy is shiny and reminds you of your victories.");
-            }
-            if (ImGui::Button("Show ASCII Art")) {
+        switch (currentRoom)
+        {
+            case ROOM_BEDROOM:
+            {
+                ImGui::TextWrapped("You are in your bedroom.");
                 currentArt = gameEngine.printArt("Bedroom");
+
+                // Track actions
+                static bool rested = false;
+                static bool checkedDrawer = false;
+                static bool checkedTrophy = false;
+
+                if (!rested && ImGui::Button("Lie down on the bed and rest")) {
+                    player.updateHealth("rest");
+                    push_log("You rested on the bed. (health updated)");
+                    rested = true;
+                }
+                if (!checkedDrawer && ImGui::Button("Look in the drawer")) {
+                    player.addToInventory("Old Key");
+                    push_log("You found an Old Key and added it to your inventory.");
+                    checkedDrawer = true;
+                }
+                if (!checkedTrophy && ImGui::Button("Check out the trophy")) {
+                    push_log("The trophy is shiny and reminds you of your victories.");
+                    checkedTrophy = true;
+                }
+
+                // All actions done? Move to Kitchen
+                if (rested && checkedDrawer && checkedTrophy) {
+                    currentRoom = ROOM_KITCHEN;
+                    push_log("You finished all Bedroom actions. Moving to Kitchen...");
+                }
+                break;
             }
-        }
-        // Kitchen actions
-        else if (currentRoom == ROOM_KITCHEN) {
-            ImGui::TextWrapped("You are in the kitchen. Delicious smells fill the air.");
-            if (ImGui::Button("Eat breakfast")) {
-                player.updateHealth("breakfast");
-                push_log("You ate breakfast. (health updated)");
-            }
-            if (ImGui::Button("Search cupboards")) {
-                player.addToInventory("Cupboard Note");
-                push_log("You found a note in the cupboards.");
-            }
-            if (ImGui::Button("Show ASCII Art")) {
+
+            case ROOM_KITCHEN:
+            {
+                ImGui::TextWrapped("You are in the kitchen. Delicious smells fill the air.");
                 currentArt = gameEngine.printArt("Kitchen");
+
+                // Track actions
+                static bool ateBreakfast = false;
+                static bool searchedCupboards = false;
+
+                if (!ateBreakfast && ImGui::Button("Eat breakfast")) {
+                    player.updateHealth("breakfast");
+                    push_log("You ate breakfast. (health updated)");
+                    ateBreakfast = true;
+                }
+                if (!searchedCupboards && ImGui::Button("Search cupboards")) {
+                    player.addToInventory("Cupboard Note");
+                    push_log("You found a note in the cupboards.");
+                    searchedCupboards = true;
+                }
+
+                // All actions done? Move to Living Room
+                if (ateBreakfast && searchedCupboards) {
+                    currentRoom = ROOM_LIVING;
+                    push_log("You finished all Kitchen actions. Moving to Living Room...");
+                }
+                break;
             }
-        }
-        // Living room
-        else if (currentRoom == ROOM_LIVING) {
-            ImGui::TextWrapped("You are in the living room. A TV sits on a stand.");
-            if (ImGui::Button("Inspect TV")) {
-                push_log("The TV is blank. Nothing interesting.");
+
+            case ROOM_LIVING:
+            {
+                ImGui::TextWrapped("You are in the living room. A TV sits on a stand.");
+                currentArt = gameEngine.printArt("Living Room");
+
+                // Track actions
+                static bool inspectedTV = false;
+
+                if (!inspectedTV && ImGui::Button("Inspect TV")) {
+                    push_log("The TV is blank. Nothing interesting.");
+                    inspectedTV = true;
+                }
+
+                // All actions done? Room progression can end here
+                if (inspectedTV) 
+                {
+                    push_log("You finished all Living Room actions. Adventure complete!");
+                    break;
+                }
+                break;
             }
         }
 
-        // Display ASCII Art if available
+        // Display ASCII Art
         if (!currentArt.empty()) {
             ImGui::Separator();
             ImGui::TextUnformatted(currentArt.c_str());
@@ -178,7 +208,6 @@ int main(int, char**)
 
         // -------------------- Player panel --------------------
         ImGui::Begin("Player", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_AlwaysAutoResize);
-
         ImGui::Text("Name: %s", player.getName().c_str());
         ImGui::Text("Hair: %s", player.getHair().c_str());
         ImGui::Text("Eyes: %s", player.getEyes().c_str());
@@ -215,7 +244,6 @@ int main(int, char**)
         glClearColor(0.10f, 0.12f, 0.14f, 1.00f);
         glClear(GL_COLOR_BUFFER_BIT);
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
         glfwSwapBuffers(window);
     }
 
