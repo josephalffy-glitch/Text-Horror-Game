@@ -12,14 +12,13 @@
 #include <vector>
 #include <array>
 #include <iostream>
-
 #include "player.h"
 #include "GameEngine.h" // optional; we call printArt if available
 
 // Forward-declare helper
 static void glfw_error_callback(int error, const char* description);
 
-enum Room {
+enum Rooms {
     ROOM_BEDROOM,
     ROOM_KITCHEN,
     ROOM_LIVING,
@@ -48,9 +47,8 @@ int main(int, char**)
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
-    // Enable docking + viewports if you want
-    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-
+    // Enable docking + viewports if you want   
+    io.ConfigFlags = ImGuiConfigFlags_None;
     // Setup style
     ImGui::StyleColorsDark();
 
@@ -61,7 +59,7 @@ int main(int, char**)
     // ----------------- Game objects -----------------
     Player player; // uses your Player class
     GameEngine gameEngine; // optional; if many methods missing we use only implemented ones
-    Room currentRoom = ROOM_BEDROOM;
+    Rooms currentRoom = ROOM_BEDROOM;
 
     // Example player initial values (you can load save here)
     player.setName("Hero");
