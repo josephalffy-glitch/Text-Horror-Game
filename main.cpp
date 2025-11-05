@@ -18,7 +18,11 @@ enum Rooms {
     ROOM_BEDROOM,
     ROOM_KITCHEN,
     ROOM_LIVING,
-    ROOM_COUNT
+};
+
+enum BedroomChoice
+{   BedroomChoice_Default,  
+    BedroomChoice_Mirror
 };
 
 int main(int, char**)
@@ -50,6 +54,7 @@ int main(int, char**)
     GameEngine gameEngine;
 
     Rooms currentRoom = ROOM_BEDROOM;
+    BedroomChoice bdrChoice = BedroomChoice_Default;
 
     // Message log for GUI
     std::string message_log;
@@ -109,31 +114,58 @@ int main(int, char**)
         {
             case ROOM_BEDROOM:
             {
-                ImGui::TextWrapped("You are in your bedroom.");
+                ImGui::TextWrapped("You are in your bedroom. It is a simple room with a bed and a nightstand.\nOn top of the nightstand is a trophy.");
                 currentArt = gameEngine.printArt("Bedroom");
 
                 // Track actions
                 static bool rested = false;
                 static bool checkedDrawer = false;
                 static bool checkedTrophy = false;
+                static bool mirrorScene = false;
 
-                if (!rested && ImGui::Button("Lie down on the bed and rest")) {
+                if (!rested && ImGui::Button("Lie down on the bed and rest")) 
+                {
                     player.updateHealth("rest");
                     push_log("You rested on the bed. (health updated)");
                     rested = true;
                 }
-                if (!checkedDrawer && ImGui::Button("Look in the drawer")) {
-                    player.addToInventory("Old Key");
-                    push_log("You found an Old Key and added it to your inventory.");
-                    checkedDrawer = true;
+
+                if (!checkedDrawer && !mirrorScene && ImGui::Button("Look in the drawer")) 
+                {
+                    push_log("\nYou walk over to the drawer on your desk and take a look.\nInside you see a few miscellaneous items:");
+                    push_log(">>>> pencils, a boxcutter, bandaids, a snack bar, a pocket mirror\n");
+                    push_log("The mirror catches your eye. Would you like to take a look?");
+                    currentArt = gameEngine.printArt("PocketMirror");
+                    mirrorScene = true;
                 }
-                if (!checkedTrophy && ImGui::Button("Check out the trophy")) {
+
+                if (mirrorScene) 
+                {
+                    if (ImGui::Button("Yes")) 
+                    {
+                        push_log("You open the mirror and see your " + player.getEyes() + " eyes staring back at you.\nYou decide to hold on to the mirror.\nIt could come in handy.\n");
+                        player.addToInventory("Pocket Mirror");
+                        mirrorScene = false;
+                        checkedDrawer = true;
+                    }
+                    if (ImGui::Button("No")) 
+                    {
+                        push_log("You decide to ignore the mirror and close the drawer.");
+                        mirrorScene = false;
+                        checkedDrawer = true;
+                    }
+                }
+
+                if (!checkedTrophy && !mirrorScene && ImGui::Button("Check out the trophy")) 
+                {
                     push_log("The trophy is shiny and reminds you of your victories.");
                     checkedTrophy = true;
                 }
 
-                // All actions done? Move to Kitchen
-                if (rested && checkedDrawer && checkedTrophy) {
+
+                // move to kitchen scene
+                if (rested && checkedDrawer && checkedTrophy) 
+                {
                     currentRoom = ROOM_KITCHEN;
                     push_log("You finished all Bedroom actions. Moving to Kitchen...");
                 }
@@ -145,23 +177,26 @@ int main(int, char**)
                 ImGui::TextWrapped("You are in the kitchen. Delicious smells fill the air.");
                 currentArt = gameEngine.printArt("Kitchen");
 
-                // Track actions
+                //track choices
                 static bool ateBreakfast = false;
                 static bool searchedCupboards = false;
 
-                if (!ateBreakfast && ImGui::Button("Eat breakfast")) {
+                if (!ateBreakfast && ImGui::Button("Eat breakfast")) 
+                {
                     player.updateHealth("breakfast");
                     push_log("You ate breakfast. (health updated)");
                     ateBreakfast = true;
                 }
-                if (!searchedCupboards && ImGui::Button("Search cupboards")) {
+                if (!searchedCupboards && ImGui::Button("Search cupboards")) 
+                {
                     player.addToInventory("Cupboard Note");
                     push_log("You found a note in the cupboards.");
                     searchedCupboards = true;
                 }
 
                 // All actions done? Move to Living Room
-                if (ateBreakfast && searchedCupboards) {
+                if (ateBreakfast && searchedCupboards) 
+                {
                     currentRoom = ROOM_LIVING;
                     push_log("You finished all Kitchen actions. Moving to Living Room...");
                 }
@@ -176,7 +211,8 @@ int main(int, char**)
                 // Track actions
                 static bool inspectedTV = false;
 
-                if (!inspectedTV && ImGui::Button("Inspect TV")) {
+                if (!inspectedTV && ImGui::Button("Inspect TV")) 
+                {
                     push_log("The TV is blank. Nothing interesting.");
                     inspectedTV = true;
                 }
@@ -185,14 +221,14 @@ int main(int, char**)
                 if (inspectedTV) 
                 {
                     push_log("You finished all Living Room actions. Adventure complete!");
-                    break;
                 }
                 break;
             }
         }
 
         // Display ASCII Art
-        if (!currentArt.empty()) {
+        if (!currentArt.empty()) 
+        {
             ImGui::Separator();
             ImGui::TextUnformatted(currentArt.c_str());
         }
@@ -215,7 +251,8 @@ int main(int, char**)
         ImGui::Separator();
         ImGui::Text("Inventory:");
         auto inv = player.getInventory();
-        for (size_t i = 0; i < inv.size(); ++i) {
+        for (size_t i = 0; i < inv.size(); ++i) 
+        {
             std::string item = inv[i];
             if (item.empty()) item = "(empty)";
             ImGui::Text("%d: %s", (int)i+1, item.c_str());
@@ -223,13 +260,15 @@ int main(int, char**)
             // Button to use item
             ImGui::SameLine();
             std::string btnLabel = "Use##" + std::to_string(i);
-            if (!inv[i].empty() && ImGui::Button(btnLabel.c_str())) {
+            if (!inv[i].empty() && ImGui::Button(btnLabel.c_str())) 
+            {
                 player.checkInventory();
                 push_log("Used item: " + inv[i]);
             }
         }
 
-        if (ImGui::Button("Check Health")) {
+        if (ImGui::Button("Check Health")) 
+        {
             player.checkHealth();
             push_log("Checked health (console output).");
         }
