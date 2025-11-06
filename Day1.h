@@ -127,6 +127,8 @@ int day1()
                 cout << "\nYou walk over to your bed and lie down. It's nice to rest for a bit...\n";
                 break;
             case 2:
+                engine.lookInStorageLocation("Bedroom", "Drawer");
+/*            
                 mirror();
                 int choice2;
                 cin >> choice2;
@@ -145,6 +147,7 @@ int day1()
                     Item mirror = Item("mirror", ItemType::MISC, 0);
                     player.addToInventory(mirror);
                 }
+*/                    
                 break;
             case 3:
                 trophy(name);

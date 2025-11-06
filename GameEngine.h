@@ -38,8 +38,9 @@ class GameEngine {
         // Game Loop
         Player* getPlayer();
         bool checkForItemInLocation(const string& roomName, const string& locationName, const string& item);
-        void rmItemFromRoom(const string& roomName, const string& locationName, const string& item);
-        void addItemToRoom(const string& roomName, const string& locationName, const string& item);
+        bool pickUpItem(const string& roomName, const string& locationName, const string itemName);
+        bool dropItem(const string& roomName, const string& locationName, const string itemName);
+        void lookInStorageLocation(const string& roomName, const string& locationName);
 
 };
 

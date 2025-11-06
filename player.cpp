@@ -13,6 +13,7 @@ Player::Player()
 	eyes = "unknown";
 	Item nullItem = Item();
 	inventory.fill(nullItem); // Initialize inventory with empty Items
+	fullInventory = false;
 }
 
 // parameterized constructor for loading saved player
@@ -59,6 +60,18 @@ array<Item, 5> Player::getInventory()
 {
 	return inventory;
 }
+bool Player::fullInv()
+{
+	// check if inventory is full
+	for(int i = 0; i < inventory.size(); i++)
+	{
+		if(inventory[i].getType() == ItemType::NULLITEM)
+		{	
+			return false;
+		}
+	}
+	return true;
+}
 
 // other member functions ........................
 void Player::updateHealth(Item item)
@@ -78,24 +91,15 @@ void Player::checkInventory()
 		cout << i + 1 << ": " << inventory[i].getName() << "\n";
 	}
 }
-void Player::addToInventory(Item item)
+bool Player::addToInventory(Item item)
 {
-	bool inventoryFull = true;
-
 	//check if inventory is full
-	for(int i = 0; i < inventory.size(); i++)
-	{
-		if(inventory[i].getType() == ItemType::NULLITEM)
-		{	
-			inventoryFull = false;
-			break;
-		}
-	}
+	fullInventory = fullInv();
 
 	//if full, notify user and return
-	if(inventoryFull) {
+	if(fullInventory) {
 		cout << "\nInventory full. Cannot add " << item.getName() << ".\n";
-		return;
+		return false;
 	} else {
 		//add item to first empty slot
 		for(int i = 0; i < inventory.size(); i++) 
@@ -104,8 +108,25 @@ void Player::addToInventory(Item item)
 			{
 				inventory[i] = item;
 				cout << "\n"<< item.getName() << " added to inventory.\n";
-				return;
+				fullInventory = fullInv();
+				return true;
 			}
 		}
 	}
+	return false; // Fallback, should not reach here
+}
+
+bool Player::removeFromInventory(const string& itemName)
+{
+	for(int i = 0; i < inventory.size(); i++)
+	{
+		if(inventory[i].getName() == itemName)
+		{
+			inventory[i] = Item(); // Replace with empty item
+			cout << "\n" << itemName << " removed from inventory.\n";
+			fullInventory = fullInv();
+			return true;
+		}
+	}
+	return false; // Item not found
 }

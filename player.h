@@ -11,6 +11,7 @@ class Player
         // player attributes
         string name, hair, eyes;
         array<Item, 5> inventory;
+        bool fullInventory;
 
     public:
         // default constructor
@@ -30,11 +31,13 @@ class Player
         string getHair();
         string getEyes();
         array<Item, 5> getInventory();
+        bool fullInv();
 
         // other member functions
         void updateHealth(Item item);
         void checkHealth();
         void checkInventory();
-        void addToInventory(Item item);
+        bool addToInventory(Item item);
+        bool removeFromInventory(const string& itemName);
 };
 #endif
