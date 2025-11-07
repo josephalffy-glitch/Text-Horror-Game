@@ -10,6 +10,9 @@
 #include "player.h"
 #include "GameEngine.h"
 
+using namespace ImGui;
+
+
 // Forward declare GLFW error callback
 static void glfw_error_callback(int error, const char* description);
 
@@ -20,10 +23,10 @@ enum Rooms {
     ROOM_LIVING,
 };
 
-enum BedroomChoice
+/*enum BedroomChoice
 {   BedroomChoice_Default,  
     BedroomChoice_Mirror
-};
+};*/
 
 int main(int, char**)
 {
@@ -42,10 +45,10 @@ int main(int, char**)
 
     // -------------------- ImGui setup --------------------
     IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
+    CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
     io.ConfigFlags = ImGuiConfigFlags_None;
-    ImGui::StyleColorsDark();
+    StyleColorsDark();
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init(glsl_version);
 
@@ -54,11 +57,12 @@ int main(int, char**)
     GameEngine gameEngine;
 
     Rooms currentRoom = ROOM_BEDROOM;
-    BedroomChoice bdrChoice = BedroomChoice_Default;
+    //BedroomChoice bdrChoice = BedroomChoice_Default;
 
     // Message log for GUI
     std::string message_log;
-    auto push_log = [&](const std::string& s) {
+    auto push_log = [&](const std::string& s) 
+    {
         message_log += s + "\n";
     };
 
@@ -70,6 +74,9 @@ int main(int, char**)
     static char hairBuffer[64] = "";
     static char eyesBuffer[64] = "";
     static bool playerCreated = false;
+    
+    //bools
+    //bool itemWindow = false;
 
     // -------------------- Main loop --------------------
     while (!glfwWindowShouldClose(window))
@@ -77,26 +84,27 @@ int main(int, char**)
         glfwPollEvents();
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
+        NewFrame();
 
         // -------------------- Character creation window --------------------
-        if (!playerCreated) {
-            ImGui::Begin("Character Creation", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
-            ImGui::Text("Welcome adventurer! Create your character:");
-            ImGui::InputText("Name", nameBuffer, IM_ARRAYSIZE(nameBuffer));
-            ImGui::InputText("Hair Color", hairBuffer, IM_ARRAYSIZE(hairBuffer));
-            ImGui::InputText("Eye Color", eyesBuffer, IM_ARRAYSIZE(eyesBuffer));
+        if (!playerCreated) 
+        {
+            Begin("Character Creation", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
+            Text("Welcome adventurer! Create your character:");
+            InputText("Name", nameBuffer, IM_ARRAYSIZE(nameBuffer));
+            InputText("Hair Color", hairBuffer, IM_ARRAYSIZE(hairBuffer));
+            InputText("Eye Color", eyesBuffer, IM_ARRAYSIZE(eyesBuffer));
 
-            if (ImGui::Button("Create Player")) {
+            if (Button("Create Player")) {
                 player.setName(nameBuffer);
                 player.setHair(hairBuffer);
                 player.setEyes(eyesBuffer);
                 playerCreated = true;
                 push_log("Player created!");
             }
-            ImGui::End();
+            End();
 
-            ImGui::Render();
+            Render();
             int display_w, display_h;
             glfwGetFramebufferSize(window, &display_w, &display_h);
             glViewport(0, 0, display_w, display_h);
@@ -108,13 +116,13 @@ int main(int, char**)
         }
 
         // -------------------- Scene panel --------------------
-        ImGui::Begin("Scene", nullptr, ImGuiWindowFlags_NoCollapse);
+        Begin("Scene", nullptr, ImGuiWindowFlags_NoCollapse);
 
         switch (currentRoom)
         {
             case ROOM_BEDROOM:
             {
-                ImGui::TextWrapped("You are in your bedroom. It is a simple room with a bed and a nightstand.\nOn top of the nightstand is a trophy.");
+                TextWrapped("You are in your bedroom. It is a simple room with a bed and a nightstand.\nOn top of the nightstand is a trophy.");
                 currentArt = gameEngine.printArt("Bedroom");
 
                 // Track actions
@@ -123,32 +131,37 @@ int main(int, char**)
                 static bool checkedTrophy = false;
                 static bool mirrorScene = false;
 
-                if (!rested && ImGui::Button("Lie down on the bed and rest")) 
+                if (!rested && Button("Lie down on the bed and rest")) 
                 {
                     player.updateHealth("rest");
                     push_log("You rested on the bed. (health updated)");
+                    //update health here
                     rested = true;
                 }
 
-                if (!checkedDrawer && !mirrorScene && ImGui::Button("Look in the drawer")) 
+                if (!checkedDrawer && !mirrorScene && Button("Look in the drawer")) 
                 {
                     push_log("\nYou walk over to the drawer on your desk and take a look.\nInside you see a few miscellaneous items:");
                     push_log(">>>> pencils, a boxcutter, bandaids, a snack bar, a pocket mirror\n");
                     push_log("The mirror catches your eye. Would you like to take a look?");
+                    //add new window with pocket mirror art
+                    Begin("Scene", nullptr, ImGuiWindowFlags_NoCollapse);
                     currentArt = gameEngine.printArt("PocketMirror");
+                    End();
                     mirrorScene = true;
                 }
 
                 if (mirrorScene) 
                 {
-                    if (ImGui::Button("Yes")) 
+                    if (Button("Yes")) 
                     {
-                        push_log("You open the mirror and see your " + player.getEyes() + " eyes staring back at you.\nYou decide to hold on to the mirror.\nIt could come in handy.\n");
+                        push_log("\nYou open the mirror and see your " + player.getEyes() + " eyes staring back at you.\nYou decide to hold on to the mirror.\nIt could come in handy.\n");
                         player.addToInventory("Pocket Mirror");
+                        //itemWindow = true;
                         mirrorScene = false;
                         checkedDrawer = true;
                     }
-                    if (ImGui::Button("No")) 
+                    if (Button("No")) 
                     {
                         push_log("You decide to ignore the mirror and close the drawer.");
                         mirrorScene = false;
@@ -156,9 +169,11 @@ int main(int, char**)
                     }
                 }
 
-                if (!checkedTrophy && !mirrorScene && ImGui::Button("Check out the trophy")) 
+                if (!checkedTrophy && !mirrorScene && Button("Check out the trophy")) 
                 {
-                    push_log("The trophy is shiny and reminds you of your victories.");
+                    push_log("The trophy is shiny and reminds you of your victories. " + player.getName() + " is printed on it.");
+                    //add new window with trophy ascii art
+
                     checkedTrophy = true;
                 }
 
@@ -166,28 +181,29 @@ int main(int, char**)
                 // move to kitchen scene
                 if (rested && checkedDrawer && checkedTrophy) 
                 {
+                    push_log(">> Mom: Sweetie! Breakfeast is ready!\n");
+                    push_log("She has always called you that. It's a little embarrassing, but mostly endearing\n");
                     currentRoom = ROOM_KITCHEN;
-                    push_log("You finished all Bedroom actions. Moving to Kitchen...");
                 }
                 break;
             }
 
             case ROOM_KITCHEN:
             {
-                ImGui::TextWrapped("You are in the kitchen. Delicious smells fill the air.");
+                TextWrapped("You are in the kitchen. Delicious smells fill the air.");
                 currentArt = gameEngine.printArt("Kitchen");
 
                 //track choices
                 static bool ateBreakfast = false;
                 static bool searchedCupboards = false;
 
-                if (!ateBreakfast && ImGui::Button("Eat breakfast")) 
+                if (!ateBreakfast && Button("Eat breakfast")) 
                 {
                     player.updateHealth("breakfast");
                     push_log("You ate breakfast. (health updated)");
                     ateBreakfast = true;
                 }
-                if (!searchedCupboards && ImGui::Button("Search cupboards")) 
+                if (!searchedCupboards && Button("Search cupboards")) 
                 {
                     player.addToInventory("Cupboard Note");
                     push_log("You found a note in the cupboards.");
@@ -205,13 +221,13 @@ int main(int, char**)
 
             case ROOM_LIVING:
             {
-                ImGui::TextWrapped("You are in the living room. A TV sits on a stand.");
+                TextWrapped("You are in the living room. A TV sits on a stand.");
                 currentArt = gameEngine.printArt("Living Room");
 
                 // Track actions
                 static bool inspectedTV = false;
 
-                if (!inspectedTV && ImGui::Button("Inspect TV")) 
+                if (!inspectedTV && Button("Inspect TV")) 
                 {
                     push_log("The TV is blank. Nothing interesting.");
                     inspectedTV = true;
@@ -229,54 +245,66 @@ int main(int, char**)
         // Display ASCII Art
         if (!currentArt.empty()) 
         {
-            ImGui::Separator();
-            ImGui::TextUnformatted(currentArt.c_str());
+            Separator();
+            TextUnformatted(currentArt.c_str());
         }
 
         // Message log
-        ImGui::Separator();
-        ImGui::TextWrapped("Message Log:");
-        ImGui::BeginChild("LogRegion", ImVec2(0,150), true, ImGuiWindowFlags_HorizontalScrollbar);
-        ImGui::TextUnformatted(message_log.c_str());
-        ImGui::EndChild();
+        Separator();
+        TextWrapped("Message Log:");
+        BeginChild("LogRegion", ImVec2(0,150), true, ImGuiWindowFlags_HorizontalScrollbar);
+        TextUnformatted(message_log.c_str());
+        EndChild();
 
-        ImGui::End(); // Scene
+        End(); // Scene
 
         // -------------------- Player panel --------------------
-        ImGui::Begin("Player", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_AlwaysAutoResize);
-        ImGui::Text("Name: %s", player.getName().c_str());
-        ImGui::Text("Hair: %s", player.getHair().c_str());
-        ImGui::Text("Eyes: %s", player.getEyes().c_str());
+        Begin("Player", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_AlwaysAutoResize); 
+        Text("Name: %s", player.getName().c_str());
+        Text("Hair: %s", player.getHair().c_str());
+        Text("Eyes: %s", player.getEyes().c_str());
 
-        ImGui::Separator();
-        ImGui::Text("Inventory:");
+        Separator();
+        Text("Inventory:");
         auto inv = player.getInventory();
         for (size_t i = 0; i < inv.size(); ++i) 
         {
             std::string item = inv[i];
             if (item.empty()) item = "(empty)";
-            ImGui::Text("%d: %s", (int)i+1, item.c_str());
+            Text("%d: %s", (int)i+1, item.c_str());
 
             // Button to use item
-            ImGui::SameLine();
-            std::string btnLabel = "Use##" + std::to_string(i);
-            if (!inv[i].empty() && ImGui::Button(btnLabel.c_str())) 
+            SameLine();
+            std::string btnLabel = "Drop##" + std::to_string(i);
+            if (!inv[i].empty() && Button(btnLabel.c_str())) 
             {
-                player.checkInventory();
+                //player.checkInventory();
                 push_log("Used item: " + inv[i]);
+                //use item function
+            }
+                        // Button to use item
+
+            SameLine();
+            std::string btnLabel2 = "Use##" + std::to_string(i);
+            if (!inv[i].empty() && Button(btnLabel2.c_str())) 
+            {
+                //player.dropItem();
+                push_log("Dropped item: " + inv[i]);
+                
             }
         }
 
-        if (ImGui::Button("Check Health")) 
+        if (Button("Check Health")) 
         {
             player.checkHealth();
+            //add visual for checked health
             push_log("Checked health (console output).");
         }
 
-        ImGui::End(); // Player
+        End();
 
-        // -------------------- Rendering --------------------
-        ImGui::Render();
+        //-------------------- Rendering --------------------
+        Render();
         int display_w, display_h;
         glfwGetFramebufferSize(window, &display_w, &display_h);
         glViewport(0, 0, display_w, display_h);
@@ -286,10 +314,26 @@ int main(int, char**)
         glfwSwapBuffers(window);
     }
 
+        /*//Item Visual Panel-----------------------------------
+        if(Begin("Items", &itemWindow))
+        {  
+            Text("A closer look . . .");
+            End();
+        }
+
+        Render();
+        int display_w2, display_h2;
+        glfwGetFramebufferSize(window, &display_w2, &display_h2);
+        glViewport(0, 0, display_w2, display_h2);
+        glClearColor(0.10f, 0.12f, 0.14f, 1.00f);
+        glClear(GL_COLOR_BUFFER_BIT);
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        glfwSwapBuffers(window);*/
+
     // -------------------- Cleanup --------------------
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
-    ImGui::DestroyContext();
+    DestroyContext();
     glfwDestroyWindow(window);
     glfwTerminate();
 
