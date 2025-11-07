@@ -1,12 +1,19 @@
-# Compiler
+# Compiler and flags
 CXX = g++
-CXXFLAGS = -Iextern/imgui -IC:/glfw/glfw-3.4.bin.WIN64/include -O2 -std=c++17 -Wall
+CXXFLAGS = -Iextern/imgui -Iglfw/include -O2 -std=c++17 -Wall
 
-# Library paths and libraries
-LIBS = -LC:/glfw/glfw-3.4.bin.WIN64/lib-mingw-w64 -lglfw3 -lopengl32 -lgdi32
+# Library paths and linked libraries
+LIBS = -Lglfw/lib -lglfw3 -lopengl32 -lgdi32
 
+# ------------------------------------------
 # Source files
-SRCS = main.cpp player.cpp GameEngine.cpp Room.cpp PowerMeterMinigame.cpp
+# ------------------------------------------
+SRCS = main.cpp \
+       player.cpp \
+       GameEngine.cpp \
+       Room.cpp \
+       PowerMeterMinigame.cpp
+
 IMGUI_SRCS = extern/imgui/imgui.cpp \
              extern/imgui/imgui_draw.cpp \
              extern/imgui/imgui_tables.cpp \
@@ -14,26 +21,21 @@ IMGUI_SRCS = extern/imgui/imgui.cpp \
              extern/imgui/backends/imgui_impl_glfw.cpp \
              extern/imgui/backends/imgui_impl_opengl3.cpp
 
-# Object files
+# Object files and target
 OBJS = $(SRCS:.cpp=.o)
 IMGUI_OBJS = $(IMGUI_SRCS:.cpp=.o)
-
-# Target executable
 TARGET = Game.exe
 
-# ---------------- Build rules ----------------
-# Build all
+# Build rules
+
+# Default build
 all: $(TARGET)
 
-# Compile main game source files
+# Compile all .cpp files to .o
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-# Compile ImGui source files
-%.o: extern/imgui/%.cpp
-	$(CXX) $(CXXFLAGS) -IC:/glfw/glfw-3.4.bin.WIN64/include -c $< -o $@
-
-# Link everything
+# Link all object files into the executable
 $(TARGET): $(OBJS) $(IMGUI_OBJS)
 	$(CXX) $(OBJS) $(IMGUI_OBJS) $(LIBS) -o $(TARGET)
 
@@ -41,8 +43,9 @@ $(TARGET): $(OBJS) $(IMGUI_OBJS)
 run: $(TARGET)
 	$(TARGET)
 
-# Clean
+# Clean build files
 clean:
 	del /Q *.o *.exe *.gch 2>nul
+	for /R extern\imgui %%f in (*.o) do del "%%f" 2>nul
 
 .PHONY: all run clean
