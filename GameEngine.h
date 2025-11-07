@@ -10,6 +10,7 @@
 #include <vector>
 #include "player.h"
 #include "Room.h"
+#include "Items.h"
 
 using namespace std;
 
@@ -19,7 +20,7 @@ class GameEngine {
         vector<Room>* rooms; // Pointer to a vector of Room objects
 
         // Private constructor
-        //GameEngine();
+        GameEngine();
         //~GameEngine();
 
     public:
@@ -37,8 +38,9 @@ class GameEngine {
         // Game Loop
         Player* getPlayer();
         bool checkForItemInLocation(const string& roomName, const string& locationName, const string& item);
-        void rmItemFromRoom(const string& roomName, const string& locationName, const string& item);
-        void addItemToRoom(const string& roomName, const string& locationName, const string& item);
+        bool pickUpItem(const string& roomName, const string& locationName, const string itemName);
+        bool dropItem(const string& roomName, const string& locationName, const string itemName);
+        void lookInStorageLocation(const string& roomName, const string& locationName);
 
 };
 

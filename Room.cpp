@@ -31,13 +31,13 @@ vector<StorageLocation> Room::getStorageLocations() {
     return storageLocations;
 }
 
-vector<string> Room::getItemsInLocation(string locationName) {
+vector<Item> Room::getItemsInLocation(string locationName) {
     for (const auto& location : storageLocations) {
         if (location.name == locationName) {
             return location.items;
         }
     }
-    return vector<string>();
+    return vector<Item>();
 }
 
 bool Room::isVisited() {
@@ -60,7 +60,7 @@ void Room::addStorageLocation(string locationName) {
     storageLocations.push_back(newLocation);
 }
 
-void Room::addItemToLocation(string locationName, string item) {
+void Room::addItemToLocation(string locationName, Item item) {
     for (auto& location : storageLocations) {
         if (location.name == locationName) {
             location.items.push_back(item);
@@ -69,11 +69,14 @@ void Room::addItemToLocation(string locationName, string item) {
     }
 }
 
-void Room::removeItemFromLocation(string locationName, string item) {
+void Room::removeItemFromLocation(string locationName, Item item) {
+    // Find the storage location
     for (auto& location : storageLocations) {
+        // If the location matches
         if (location.name == locationName) {
+            // Find and remove the item
             for (auto it = location.items.begin(); it != location.items.end(); ++it) {
-                if (*it == item) {
+                if (it->getName() == item.getName()) {
                     location.items.erase(it);
                     return;
                 }

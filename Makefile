@@ -6,7 +6,7 @@ CXXFLAGS = -Iextern/imgui -IC:/glfw/glfw-3.4.bin.WIN64/include -O2 -std=c++17 -W
 LIBS = -LC:/glfw/glfw-3.4.bin.WIN64/lib-mingw-w64 -lglfw3 -lopengl32 -lgdi32
 
 # Source files
-SRCS = main.cpp player.cpp GameEngine.cpp
+SRCS = main.cpp player.cpp GameEngine.cpp Room.cpp PowerMeterMinigame.cpp
 IMGUI_SRCS = extern/imgui/imgui.cpp \
              extern/imgui/imgui_draw.cpp \
              extern/imgui/imgui_tables.cpp \

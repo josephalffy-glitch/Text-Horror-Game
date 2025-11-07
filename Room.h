@@ -3,12 +3,13 @@
 
 #include <vector>
 #include <string>
+#include "Items.h"
 
 using namespace std;
 
 struct StorageLocation {
     string name;
-    vector<string> items;
+    vector<Item> items;
 };
 
 class Room {
@@ -26,14 +27,14 @@ class Room {
         string getName();
         string getDescription();
         vector<StorageLocation> getStorageLocations();
-        vector<string> getItemsInLocation(string locationName);
+        vector<Item> getItemsInLocation(string locationName);
         bool isVisited();
         // setters
         void setName(string name);
         void setDescription(string description);
         void addStorageLocation(string locationName);
-        void addItemToLocation(string locationName, string item);
-        void removeItemFromLocation(string locationName, string item);
+        void addItemToLocation(string locationName, Item item);
+        void removeItemFromLocation(string locationName, Item item);
         void setVisited(bool visited);
 
 };

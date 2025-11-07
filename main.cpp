@@ -9,6 +9,7 @@
 #include <iostream>
 #include "player.h"
 #include "GameEngine.h"
+#include "Items.h"
 
 using namespace ImGui;
 
@@ -53,8 +54,9 @@ int main(int, char**)
     ImGui_ImplOpenGL3_Init(glsl_version);
 
     // -------------------- Game objects --------------------
-    Player player;
-    GameEngine gameEngine;
+    GameEngine &gameEngine = GameEngine::getInstance();
+    Player* playerPtr = gameEngine.getPlayer();
+    Player& player = *playerPtr;
 
     Rooms currentRoom = ROOM_BEDROOM;
     //BedroomChoice bdrChoice = BedroomChoice_Default;
@@ -133,7 +135,7 @@ int main(int, char**)
 
                 if (!rested && Button("Lie down on the bed and rest")) 
                 {
-                    player.updateHealth("rest");
+                    //player.updateHealth("rest");
                     push_log("You rested on the bed. (health updated)");
                     //update health here
                     rested = true;
@@ -156,7 +158,7 @@ int main(int, char**)
                     if (Button("Yes")) 
                     {
                         push_log("\nYou open the mirror and see your " + player.getEyes() + " eyes staring back at you.\nYou decide to hold on to the mirror.\nIt could come in handy.\n");
-                        player.addToInventory("Pocket Mirror");
+                        //player.addToInventory("Pocket Mirror");
                         //itemWindow = true;
                         mirrorScene = false;
                         checkedDrawer = true;
@@ -199,13 +201,13 @@ int main(int, char**)
 
                 if (!ateBreakfast && Button("Eat breakfast")) 
                 {
-                    player.updateHealth("breakfast");
+                    //player.updateHealth("breakfast");
                     push_log("You ate breakfast. (health updated)");
                     ateBreakfast = true;
                 }
                 if (!searchedCupboards && Button("Search cupboards")) 
                 {
-                    player.addToInventory("Cupboard Note");
+                    //player.addToInventory("Cupboard Note");
                     push_log("You found a note in the cupboards.");
                     searchedCupboards = true;
                 }
@@ -266,30 +268,30 @@ int main(int, char**)
 
         Separator();
         Text("Inventory:");
-        auto inv = player.getInventory();
+        array<Item, 5> inv = player.getInventory();
         for (size_t i = 0; i < inv.size(); ++i) 
         {
-            std::string item = inv[i];
+            std::string item = inv[i].getName();
             if (item.empty()) item = "(empty)";
             Text("%d: %s", (int)i+1, item.c_str());
 
             // Button to use item
             SameLine();
             std::string btnLabel = "Drop##" + std::to_string(i);
-            if (!inv[i].empty() && Button(btnLabel.c_str())) 
+            if (!(inv[i].getType() == ItemType::NULLITEM) && Button(btnLabel.c_str())) 
             {
                 //player.checkInventory();
-                push_log("Used item: " + inv[i]);
+                push_log("Used item: " + inv[i].getName());
                 //use item function
             }
                         // Button to use item
 
             SameLine();
             std::string btnLabel2 = "Use##" + std::to_string(i);
-            if (!inv[i].empty() && Button(btnLabel2.c_str())) 
+            if (!!(inv[i].getType() == ItemType::NULLITEM) && Button(btnLabel2.c_str())) 
             {
                 //player.dropItem();
-                push_log("Dropped item: " + inv[i]);
+                push_log("Dropped item: " + inv[i].getName());
                 
             }
         }
