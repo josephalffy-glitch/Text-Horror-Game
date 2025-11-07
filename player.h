@@ -39,5 +39,7 @@ class Player
         void checkInventory();
         bool addToInventory(Item item);
         bool removeFromInventory(const string& itemName);
+        void clearInventory();
+
 };
 #endif

@@ -33,7 +33,7 @@ class GameEngine {
         void saveGame(const string& saveFile);
 
         //ASCII Generation
-        void printArt(const string& image);
+        string printArt(const string& image);
 
         // Game Loop
         Player* getPlayer();

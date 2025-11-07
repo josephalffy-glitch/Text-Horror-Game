@@ -130,3 +130,10 @@ bool Player::removeFromInventory(const string& itemName)
 	}
 	return false; // Item not found
 }
+void Player::clearInventory()
+{
+	for(int i = 0; i < inventory.size(); i++)
+	{
+		inventory[i] = Item();
+	}
+}
