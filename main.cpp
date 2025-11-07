@@ -1,8 +1,8 @@
-#include "imgui.h"
+#include "extern/imgui/imgui.h"
 #include "extern/imgui/backends/imgui_impl_glfw.h"
 #include "extern/imgui/backends/imgui_impl_opengl3.h"
 #include <stdio.h>
-#include <GLFW/glfw3.h>
+#include "glfw/include/GLFW/glfw3.h"
 #include <string>
 #include <vector>
 #include <sstream>
