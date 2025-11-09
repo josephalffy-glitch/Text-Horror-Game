@@ -63,7 +63,7 @@ array<Item, 5> Player::getInventory()
 bool Player::fullInv()
 {
 	// check if inventory is full
-	for(int i = 0; i < inventory.size(); i++)
+	for(long long unsigned int i = 0; i < inventory.size(); i++)
 	{
 		if(inventory[i].getType() == ItemType::NULLITEM)
 		{	
@@ -86,7 +86,7 @@ void Player::checkInventory()
 {
 	cout << "\nInventory:\n";
 
-	for(int i = 0; i < inventory.size(); i++)
+	for(long long unsigned int i = 0; i < inventory.size(); i++)
 	{
 		cout << i + 1 << ": " << inventory[i].getName() << "\n";
 	}
@@ -102,7 +102,7 @@ bool Player::addToInventory(Item item)
 		return false;
 	} else {
 		//add item to first empty slot
-		for(int i = 0; i < inventory.size(); i++) 
+		for(long long unsigned int i = 0; i < inventory.size(); i++) 
 		{
 			if(inventory[i].getType() == ItemType::NULLITEM) 
 			{
@@ -118,7 +118,7 @@ bool Player::addToInventory(Item item)
 
 bool Player::removeFromInventory(const string& itemName)
 {
-	for(int i = 0; i < inventory.size(); i++)
+	for(long long unsigned int i = 0; i < inventory.size(); i++)
 	{
 		if(inventory[i].getName() == itemName)
 		{
@@ -132,7 +132,7 @@ bool Player::removeFromInventory(const string& itemName)
 }
 void Player::clearInventory()
 {
-	for(int i = 0; i < inventory.size(); i++)
+	for(long long unsigned int i = 0; i < inventory.size(); i++)
 	{
 		inventory[i] = Item();
 	}
