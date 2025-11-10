@@ -31,7 +31,7 @@ enum Rooms {
 
 int main(int, char**)
 {
-    // -------------------- GLFW / OpenGL setup --------------------
+    //GLFW/OpenGL setup
     glfwSetErrorCallback(glfw_error_callback);
     if (!glfwInit()) return 1;
 
@@ -44,7 +44,7 @@ int main(int, char**)
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1);
 
-    // -------------------- ImGui setup --------------------
+    //ImGui setup
     IMGUI_CHECKVERSION();
     CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
@@ -53,10 +53,11 @@ int main(int, char**)
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init(glsl_version);
 
-    // -------------------- Game objects --------------------
+    //Game objects
     GameEngine &gameEngine = GameEngine::getInstance();
     Player* playerPtr = gameEngine.getPlayer();
     Player& player = *playerPtr;
+    player.takeDamage(1); //starts the player with one health down
 
     Rooms currentRoom = ROOM_BEDROOM;
     //BedroomChoice bdrChoice = BedroomChoice_Default;
@@ -80,7 +81,7 @@ int main(int, char**)
     //bools
     //bool itemWindow = false;
 
-    // -------------------- Main loop --------------------
+    //Main loop
     while (!glfwWindowShouldClose(window))
     {
         glfwPollEvents();
@@ -91,13 +92,14 @@ int main(int, char**)
         // -------------------- Character creation window --------------------
         if (!playerCreated) 
         {
-            Begin("Character Creation", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
-            Text("Welcome adventurer! Create your character:");
-            InputText("Name", nameBuffer, IM_ARRAYSIZE(nameBuffer));
-            InputText("Hair Color", hairBuffer, IM_ARRAYSIZE(hairBuffer));
-            InputText("Eye Color", eyesBuffer, IM_ARRAYSIZE(eyesBuffer));
+            Begin("Character Creation", nullptr, ImGuiWindowFlags_AlwaysAutoResize); //creates window that autoresizes
+            Text("Welcome adventurer! Create your character:"); //outputs text
+            InputText("Name", nameBuffer, IM_ARRAYSIZE(nameBuffer)); //creates buffer for name
+            InputText("Hair Color", hairBuffer, IM_ARRAYSIZE(hairBuffer)); //creates buffer for hair
+            InputText("Eye Color", eyesBuffer, IM_ARRAYSIZE(eyesBuffer)); //creates buffer for eye color
 
-            if (Button("Create Player")) {
+            if (Button("Create Player")) //when player clicks create player button
+            {
                 player.setName(nameBuffer);
                 player.setHair(hairBuffer);
                 player.setEyes(eyesBuffer);
@@ -117,7 +119,8 @@ int main(int, char**)
             continue; // skip the rest of the loop until player is created
         }
 
-        // -------------------- Scene panel --------------------
+        
+        //Scene window
         Begin("Scene", nullptr, ImGuiWindowFlags_NoCollapse);
 
         switch (currentRoom)
@@ -135,7 +138,7 @@ int main(int, char**)
 
                 if (!rested && Button("Lie down on the bed and rest")) 
                 {
-                    //player.updateHealth("rest");
+                    player.heal(1);
                     push_log("You rested on the bed. (health updated)");
                     //update health here
                     rested = true;
@@ -226,7 +229,6 @@ int main(int, char**)
                 TextWrapped("You are in the living room. A TV sits on a stand.");
                 currentArt = gameEngine.printArt("Living Room");
 
-                // Track actions
                 static bool inspectedTV = false;
 
                 if (!inspectedTV && Button("Inspect TV")) 
@@ -235,7 +237,7 @@ int main(int, char**)
                     inspectedTV = true;
                 }
 
-                // All actions done? Room progression can end here
+                // All actions done
                 if (inspectedTV) 
                 {
                     push_log("You finished all Living Room actions. Adventure complete!");
@@ -247,12 +249,12 @@ int main(int, char**)
         // Display ASCII Art
         if (!currentArt.empty()) 
         {
-            Separator();
+            Separator(); //draws line
             TextUnformatted(currentArt.c_str());
         }
 
         // Message log
-        Separator();
+        Separator(); //draws line
         TextWrapped("Message Log:");
         BeginChild("LogRegion", ImVec2(0,150), true, ImGuiWindowFlags_HorizontalScrollbar);
         TextUnformatted(message_log.c_str());
@@ -260,13 +262,14 @@ int main(int, char**)
 
         End(); // Scene
 
-        // -------------------- Player panel --------------------
+        // Player Window
         Begin("Player", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_AlwaysAutoResize); 
         Text("Name: %s", player.getName().c_str());
         Text("Hair: %s", player.getHair().c_str());
         Text("Eyes: %s", player.getEyes().c_str());
 
-        Separator();
+
+        Separator(); //draws line
         Text("Inventory:");
         array<Item, 5> inv = player.getInventory();
         for (size_t i = 0; i < inv.size(); ++i) 
@@ -296,16 +299,28 @@ int main(int, char**)
             }
         }
 
-        if (Button("Check Health")) 
+        Separator();//draws line   
+
+        //HEALTH
+        Text("Health:"); //prints health
+
+        int current = player.getCurrentHealth(); //gets current player health
+        int max = player.getMaxHealth(); //gets max player healht (5)
+
+        // Draw hearts inline
+        for (int i = 0; i < max; ++i)//loops through each "heart"
         {
-            player.checkHealth();
-            //add visual for checked health
-            push_log("Checked health (console output).");
+            if (i < current) //check all hearts up to current and colors it
+                TextColored(ImVec4(1.0f, 0.2f, 0.2f, 1.0f), "O"); // red heart
+            else
+                TextColored(ImVec4(0.5f, 0.5f, 0.5f, 0.5f), "X"); // gray hearSt
+            SameLine(); //keeps hearts on same line
         }
+
 
         End();
 
-        //-------------------- Rendering --------------------
+        //Rendering
         Render();
         int display_w, display_h;
         glfwGetFramebufferSize(window, &display_w, &display_h);
@@ -316,7 +331,7 @@ int main(int, char**)
         glfwSwapBuffers(window);
     }
 
-        /*//Item Visual Panel-----------------------------------
+        /*//Item Visual Window
         if(Begin("Items", &itemWindow))
         {  
             Text("A closer look . . .");
@@ -332,7 +347,7 @@ int main(int, char**)
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         glfwSwapBuffers(window);*/
 
-    // -------------------- Cleanup --------------------
+    //Cleanup
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     DestroyContext();

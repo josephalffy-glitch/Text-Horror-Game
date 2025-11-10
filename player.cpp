@@ -14,6 +14,9 @@ Player::Player()
 	Item nullItem = Item();
 	inventory.fill(nullItem); // Initialize inventory with empty Items
 	fullInventory = false;
+	//health
+	maxHealth = 5;
+    healthUnits.resize(maxHealth, 1); // start full health
 }
 
 // parameterized constructor for loading saved player
@@ -74,14 +77,6 @@ bool Player::fullInv()
 }
 
 // other member functions ........................
-void Player::updateHealth(Item item)
-{
-
-}
-void Player::checkHealth()
-{
-
-}
 void Player::checkInventory()
 {
 	cout << "\nInventory:\n";
@@ -136,4 +131,68 @@ void Player::clearInventory()
 	{
 		inventory[i] = Item();
 	}
+}
+
+//health functions
+void Player::takeDamage(int amount)
+ {
+    cout << "You took " << amount << " damage!\n";
+    for (int i = 0; i < amount && getCurrentHealth() > 0; ++i)
+     {
+        for (int j = maxHealth - 1; j >= 0; --j) 
+        {
+            if (healthUnits[j] == 1) 
+            {
+                healthUnits[j] = 0;
+                break;
+            }
+        }
+    }
+    display();
+}
+
+void Player::heal(int amount) 
+{
+    cout << "Healing " << amount << " points!\n";
+    for (int i = 0; i < amount; ++i)
+     {
+        for (int j = 0; j < maxHealth; ++j)
+         {
+            if (healthUnits[j] == 0) 
+            {
+                healthUnits[j] = 1;
+                break;
+            }
+        }
+    }
+    display();
+}
+
+void Player::display() const 
+{
+    cout << "Health: [ ";
+    for (int unit : healthUnits) 
+    {
+        cout << (unit == 1 ? "♥" : "· "); // ♥ = full, · = empty
+    }
+    cout << "]  (" << getCurrentHealth() << "/" << maxHealth << ")\n";
+}
+
+bool Player::isAlive() const 
+{
+    return getCurrentHealth() > 0;
+}
+
+int Player::getCurrentHealth() const 
+{
+    int total = 0;
+    for (int unit : healthUnits)
+        if (unit == 1)
+            total++;
+    return total;
+}
+
+int Player::getMaxHealth() const 
+{
+    return maxHealth;
 }
