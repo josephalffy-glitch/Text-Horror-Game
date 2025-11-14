@@ -127,7 +127,7 @@ int day1()
                 cout << "\nYou walk over to your bed and lie down. It's nice to rest for a bit...\n";
                 break;
             case 2:
-                engine.lookInStorageLocation("Bedroom", "Drawer");
+                //engine.lookInStorageLocation("Bedroom", "Drawer");
 /*            
                 mirror();
                 int choice2;

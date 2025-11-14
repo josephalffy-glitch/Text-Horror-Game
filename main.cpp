@@ -415,7 +415,7 @@ int main(int, char**)
                 std::string btnLabel = "Use##" + std::to_string(i);
                 if (Button(btnLabel.c_str())) 
                 {
-                    //gameEngine.useItem(inv[i].getName(), message_log);
+                    gameEngine.useItem(inv[i].getName(), message_log);
                 }
             }
         }

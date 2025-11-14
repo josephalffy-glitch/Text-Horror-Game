@@ -41,6 +41,7 @@ class GameEngine {
 
         // Game Loop
         Player* getPlayer();
+        void useItem(const string& itemName, std::string& message_log);
         bool checkForItemInLocation(const string& roomName, const string& locationName, const string& item);
         bool pickUpItem(const string& roomName, const string& locationName, const string itemName);
         bool dropItem(const string& roomName, const string& locationName, const string itemName);

@@ -32,7 +32,7 @@ GameEngine::GameEngine()
 
     // Initialize game items
     // (Bedroom items)
-    Item* mirror = new Item("mirror", ItemType::MISC, 0);
+    Item* mirror = new Item("mirror", ItemType::MIRROR, 0);
     Item* pencil = new Item("pencil", ItemType::MISC, 0);
     Item* bandaids = new Item("bandage", ItemType::BANDAGE, 5);
     Item* boxcutter = new Item("boxcutter", ItemType::MISC, 0);
@@ -78,6 +78,38 @@ GameEngine& GameEngine::getInstance()
 Player* GameEngine::getPlayer()
 {
     return player;
+}
+
+void GameEngine::useItem(const string& itemName, std::string& message_log){
+    auto push_log = [&](const std::string& s) 
+    {
+        message_log += s + "\n";
+    };
+
+    array<Item, 5> inventory = player->getInventory();
+    for (const Item& item : inventory) {
+        if (item.getName() == itemName) {
+            switch (item.getType()) {
+                case ItemType::FOOD:
+                    player->heal(item.getHealAmount());
+                    push_log("You ate " + itemName + " and healed " + to_string(item.getHealAmount()) + " health.");
+                    player->removeFromInventory(itemName);
+                    return;
+                case ItemType::BANDAGE:
+                    player->heal(item.getHealAmount());
+                    push_log("You used " + itemName + " and healed " + to_string(item.getHealAmount()) + " health.");
+                    player->removeFromInventory(itemName);
+                    return;
+                case ItemType::MIRROR:
+                    push_log("\nYou open the mirror and see your " + player->getEyes() + " eyes staring back at you.");
+                    return;
+                default:
+                    push_log(itemName + " cannot be used right now.");
+                    return;
+            }
+        }
+    }
+    cout << "You do not have " << itemName << " in your inventory.\n";
 }
 
 bool GameEngine::pickUpItem(const string& roomName, const string& locationName, const string itemName){
