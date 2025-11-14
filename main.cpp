@@ -78,6 +78,8 @@ int main(int, char**)
     static char eyesBuffer[64] = "";
     static bool playerCreated = false;
     static bool titleScreenDone = false;
+    static bool saveClicked = false;
+    static bool quitClicked = false;
     
     //bools
     //bool itemWindow = false;
@@ -117,9 +119,7 @@ int main(int, char**)
             {
                 titleScreenDone = true;
             }
-
-            //float windowWidth2 = ImGui::GetWindowSize().x;
-            float buttonWidth2 = ImGui::CalcTextSize("Start Game").x + ImGui::GetStyle().FramePadding.x * 2;
+            float buttonWidth2 = ImGui::CalcTextSize("Start Game").x + ImGui::GetStyle().FramePadding.x * 2; //gets button width
 
             float posX2 = (windowWidth - buttonWidth2) * 0.5f;
             ImGui::SetCursorPosX(posX2);
@@ -311,6 +311,21 @@ int main(int, char**)
         TextUnformatted(message_log.c_str());
         EndChild();
 
+        //SAVE FEATURE
+        if(Button("Save"))
+        {
+            saveClicked = true;
+            //gameEngine.saveGame("");
+        }
+
+        SameLine();
+        if(Button("Quit"))
+        {
+            quitClicked = true;
+
+        }
+
+
         End(); // Scene
 
         // Player Window
@@ -369,8 +384,8 @@ int main(int, char**)
             SameLine(); //keeps hearts on same line
         }
 
-
         End();
+
 
         //Rendering
         Render();
@@ -382,22 +397,6 @@ int main(int, char**)
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         glfwSwapBuffers(window);
     }
-
-        /*//Item Visual Window
-        if(Begin("Items", &itemWindow))
-        {  
-            Text("A closer look . . .");
-            End();
-        }
-
-        Render();
-        int display_w2, display_h2;
-        glfwGetFramebufferSize(window, &display_w2, &display_h2);
-        glViewport(0, 0, display_w2, display_h2);
-        glClearColor(0.10f, 0.12f, 0.14f, 1.00f);
-        glClear(GL_COLOR_BUFFER_BIT);
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-        glfwSwapBuffers(window);*/
 
     //Cleanup
     ImGui_ImplOpenGL3_Shutdown();
