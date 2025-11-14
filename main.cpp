@@ -10,6 +10,7 @@
 #include "player.h"
 #include "GameEngine.h"
 #include "Items.h"
+#include "PowerMeterMinigame.h"
 
 using namespace ImGui;
 
@@ -75,17 +76,19 @@ int main(int, char**)
     // ASCII art display
     std::string currentArt;
 
-    // -------------------- Character creation --------------------
+    // -------------------- Buffers and Trackers --------------------
     static char nameBuffer[128] = "";
     static char hairBuffer[64] = "";
     static char eyesBuffer[64] = "";
+    static char saveFileBuffer[64] = "";
     static bool playerCreated = false;
     static bool titleScreenDone = false;
     static bool saveClicked = false;
     static bool quitClicked = false;
-    
-    //bools
-    //bool itemWindow = false;
+    bool powerGameActive = false; 
+    PowerMeterMinigame powerGame;
+    bool powerGameFinished = false;
+    bool powerGameWin = false;
 
     //Main loop
     while (!glfwWindowShouldClose(window))
@@ -109,13 +112,13 @@ int main(int, char**)
                 //centers the art
                 float cursorPosX = (windowWidth - textWidth) * 0.5f;
                 SetCursorPosX(cursorPosX);
-                TextUnformatted(currentArt.c_str());
+                TextUnformatted(currentArt.c_str()); //shows art
             }
 
             float windowWidth = ImGui::GetWindowSize().x;
             float buttonWidth = ImGui::CalcTextSize("Start Game").x + ImGui::GetStyle().FramePadding.x * 2;
-
-            float posX = (windowWidth - buttonWidth) * 0.5f;
+            //centers start game button
+            float posX = (windowWidth - buttonWidth) * 0.5f; 
             SetCursorPosX(posX);
 
             if(Button("Start Game"))
@@ -123,7 +126,7 @@ int main(int, char**)
                 titleScreenDone = true;
             }
             float buttonWidth2 = ImGui::CalcTextSize("Start Game").x + ImGui::GetStyle().FramePadding.x * 2; //gets button width
-
+            //centers load game button
             float posX2 = (windowWidth - buttonWidth2) * 0.5f;
             ImGui::SetCursorPosX(posX2);
             if(Button("Load Game"))
@@ -174,7 +177,7 @@ int main(int, char**)
         }
 
         
-        //Scene window
+//-------------------Main Scene Window---------------------------
         Begin("Scene", nullptr, ImGuiWindowFlags_NoCollapse);
 
         switch (currentRoom)
@@ -235,7 +238,7 @@ int main(int, char**)
                 // move to kitchen scene
                 if (rested && checkedDrawer && checkedTrophy) 
                 {
-                    push_log(">> Mom: Sweetie! Breakfeast is ready!\n");
+                    push_log("\n>> Mom: Sweetie! Breakfeast is ready!\n");
                     push_log("She has always called you that. It's a little embarrassing, but mostly endearing\n");
                     currentRoom = ROOM_KITCHEN;
                 }
@@ -244,12 +247,16 @@ int main(int, char**)
 
             case ROOM_KITCHEN:
             {
-                TextWrapped("You are in the kitchen. Delicious smells fill the air.");
+                TextWrapped("\nYou run to the kitchen, ready for a fresh meal.\n");
                 currentArt = gameEngine.printArt("Kitchen");
+                //push_log("Your mom turns around with a plate of waffles drenched in syrup.\n");
+                //push_log("As your mom sets the plate on the dining table you take a notice of her right hand.\nIt's bandaged up.\n");
+
 
                 //track choices
                 static bool ateBreakfast = false;
                 static bool searchedCupboards = false;
+                static bool askedAboutHand = false;
 
                 if (!ateBreakfast && Button("Eat breakfast")) 
                 {
@@ -257,14 +264,74 @@ int main(int, char**)
                     push_log("You ate breakfast. (health updated)");
                     ateBreakfast = true;
                 }
-                if (!searchedCupboards && Button("Search cupboards")) 
+                if (!askedAboutHand && Button("Ask your mom about her hand")) 
                 {
-                    //player.addToInventory("Cupboard Note");
-                    push_log("You found a note in the cupboards.");
-                    searchedCupboards = true;
+                    push_log(player.getName() + ": What happened to your hand mom?\n");
+                    askedAboutHand = true;
+                }
+//-------------------------POWER METER TEST-------------------------------
+                if (Button("POWER METER GAME (FOR TESTING ONLY)"))
+                {
+                    powerGameActive = true;
+                    powerGameFinished = false;
+                    powerGame = PowerMeterMinigame();
                 }
 
-                // All actions done? Move to Living Room
+                if (powerGameActive && !powerGameFinished)
+                {
+                    Begin("Power Meter");
+
+                    // Update the cursor position each frame
+                    powerGame.update();
+
+                    // Draw the meter bar
+                    Text("=== AUXILIARY POWER CONTROL ===");
+                    Text("Goal: stop the cursor (^) inside the '=' zone.");
+
+                    std::string meter;
+                    for (int i = 0; i < powerGame.meterWidth; ++i)
+                    {
+                        meter += (i >= powerGame.targetZoneStart && i < powerGame.targetZoneEnd) ? "=" : "-";
+
+                    }
+                    Text("[%s]", meter.c_str());
+
+                    //Draw cursor
+                    std::string cursorLine(powerGame.cursorPosition, ' ');
+                    cursorLine += "^";
+                    ImGui::Text("%s", cursorLine.c_str());
+
+                    //Stop button
+                    if (Button("Stop Cursor")) 
+                    {
+                        powerGameFinished = true;
+                        powerGameWin = powerGame.checkWinCondition(powerGame.cursorPosition);
+                        powerGameActive = false; //stop updating
+                    }
+
+                    End();
+                }
+
+                if (powerGameFinished)
+                {
+                    Begin("Power Meter Result");
+                    if (powerGameWin) 
+                    {
+                        Text("The power is back.");
+                    } else 
+                    {
+                        Text("Oh no, I missed it.");
+                    }
+                    if (Button("Close")) 
+                    {
+                        powerGameFinished = false;
+                    }
+                    End();
+                }
+
+//----------------------END POWER METER------------------------------------              
+
+                //move to living room
                 if (ateBreakfast && searchedCupboards) 
                 {
                     currentRoom = ROOM_LIVING;
@@ -309,7 +376,7 @@ int main(int, char**)
         TextUnformatted(message_log.c_str());
         EndChild();
 
-        //SAVE FEATURE
+//---------------saving and quiting buttons----------------
         if(Button("Save"))
         {
             saveClicked = true;
@@ -332,7 +399,7 @@ int main(int, char**)
         Text("Hair: %s", player.getHair().c_str());
         Text("Eyes: %s", player.getEyes().c_str());
 
-
+//------------Inventory-------------------------
         Separator(); //draws line
         Text("Inventory:");
         array<Item, 5> inv = player.getInventory();
@@ -342,31 +409,21 @@ int main(int, char**)
             if (item.empty()) item = "(empty)";
             Text("%d: %s", (int)i+1, item.c_str());
 
-            // Button to use item
-            SameLine();
-            std::string btnLabel = "Drop##" + std::to_string(i);
-            if (!(inv[i].getType() == ItemType::NULLITEM) && Button(btnLabel.c_str())) 
+            if (inv[i].getType() != ItemType::NULLITEM) 
             {
-                //player.checkInventory();
-                push_log("Used item: " + inv[i].getName());
-                //use item function
-            }
-                        // Button to use item
-
-            SameLine();
-            std::string btnLabel2 = "Use##" + std::to_string(i);
-            if (!!(inv[i].getType() == ItemType::NULLITEM) && Button(btnLabel2.c_str())) 
-            {
-                //player.dropItem();
-                //gameEngine.dropItem();
-                push_log("Dropped item: " + inv[i].getName());
-                
+                SameLine();
+                std::string btnLabel = "Use##" + std::to_string(i);
+                if (Button(btnLabel.c_str())) 
+                {
+                    //gameEngine.useItem(inv[i].getName(), message_log);
+                }
             }
         }
 
-        Separator();//draws line   
 
-        //HEALTH
+
+//------------------Health----------------------------
+        Separator();//draws line   
         Text("Health:"); //prints health
 
         int current = player.getCurrentHealth(); //gets current player health
