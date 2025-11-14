@@ -61,6 +61,9 @@ int main(int, char**)
 
     Rooms currentRoom = ROOM_BEDROOM;
     //BedroomChoice bdrChoice = BedroomChoice_Default;
+    static bool showStorageWindow = false;
+    static string currentRoomName = "";
+    static string currentStorageLocation = "";
 
     // Message log for GUI
     std::string message_log;
@@ -197,6 +200,11 @@ int main(int, char**)
 
                 if (!checkedDrawer && !mirrorScene && Button("Look in the drawer")) 
                 {
+                    currentStorageLocation = "Drawer";
+                    currentRoomName = "Bedroom";
+                    gameEngine.lookInStorageLocation(currentRoomName, currentStorageLocation, showStorageWindow, message_log);
+
+                    /*
                     push_log("\nYou walk over to the drawer on your desk and take a look.\nInside you see a few miscellaneous items:");
                     push_log(">>>> pencils, a boxcutter, bandaids, a snack bar, a pocket mirror\n");
                     push_log("The mirror catches your eye. Would you like to take a look?");
@@ -205,6 +213,7 @@ int main(int, char**)
                     currentArt = gameEngine.printArt("PocketMirror");
                     End();
                     mirrorScene = true;
+                    */
                 }
 
                 if (mirrorScene) 
@@ -367,6 +376,10 @@ int main(int, char**)
             else
                 TextColored(ImVec4(0.5f, 0.5f, 0.5f, 0.5f), "X"); // gray hearSt
             SameLine(); //keeps hearts on same line
+        }
+
+        if (showStorageWindow) {
+            gameEngine.renderStorageLocationWindow(currentRoomName, currentStorageLocation, showStorageWindow, message_log);
         }
 
 

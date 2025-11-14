@@ -8,6 +8,10 @@
 #include <fstream>
 #include <sstream> // for stringstream
 #include <string>
+#include "extern/imgui/imgui.h"
+#include "extern/imgui/backends/imgui_impl_glfw.h"
+#include "extern/imgui/backends/imgui_impl_opengl3.h"
+#include "glfw/include/GLFW/glfw3.h" 
 
 using namespace std;
 
@@ -139,7 +143,15 @@ bool GameEngine::dropItem(const string& roomName, const string& locationName, co
 // lookInStorageLocation opens up a storage location and lists items
 // and then asks the player if they want to inspect, pick anything up, drop
 // anything, or leave.
-void GameEngine::lookInStorageLocation(const string& roomName, const string& locationName){
+void GameEngine::lookInStorageLocation(const string& roomName, const string& locationName, bool& showStorageWindow, std::string& message_log){
+    auto push_log = [&](const std::string& s) 
+    {
+        message_log += s + "\n";
+    };
+
+    showStorageWindow = true;
+    push_log("You look in the " + locationName + " and see the following items:");
+/*    
     for (Room& room : *rooms) {
         if (room.getName() == roomName) {
             vector<Item> items = room.getItemsInLocation(locationName);
@@ -213,7 +225,114 @@ void GameEngine::lookInStorageLocation(const string& roomName, const string& loc
 
         firstLoop = false;
     }
+*/
 }
+
+void GameEngine::renderStorageLocationWindow(const string& roomName, const string& locationName, bool& showStorageWindow, std::string& message_log) {
+    auto push_log = [&](const std::string& s) 
+    {
+        message_log += s + "\n";
+    };
+    
+    if (!showStorageWindow) return;
+
+    // Create window title
+    string windowTitle = locationName + " (" + roomName + ")";
+    
+    if (ImGui::Begin(windowTitle.c_str(), &showStorageWindow, ImGuiWindowFlags_AlwaysAutoResize)) {
+        ImGui::Text("Contents of %s:", locationName.c_str());
+        ImGui::Separator();
+
+        // Find the room and get items
+        for (Room& room : *rooms) {
+            if (room.getName() == roomName) {
+                vector<Item> items = room.getItemsInLocation(locationName);
+                
+                if (items.empty()) {
+                    ImGui::Text("(empty)");
+                } else {
+                    // Display each item with a "Take" button
+                    for (size_t i = 0; i < items.size(); ++i) {
+                        const Item& item = items[i];
+                        
+                        // Display item name
+                        ImGui::Text("%s", item.getName().c_str());
+                        
+                        // Same line for the "Take" button
+                        ImGui::SameLine();
+                        
+                        // Create unique button ID
+                        string btnLabel = "Take##" + locationName + "_" + to_string(i);
+                        
+                        if (ImGui::Button(btnLabel.c_str())) {
+                            // Check if inventory is full
+                            if (player->fullInv()) {
+                                push_log("Inventory is full! Cannot pick up " + item.getName() + ".");
+                            } else {
+                                // Call pickUpItem function
+                                bool success = pickUpItem(roomName, locationName, item.getName());
+                                if (success) {
+                                    push_log("Picked up " + item.getName() + " from the " + locationName + ".");
+                                } else {
+                                    push_log("Failed to pick up " + item.getName() + ".");
+                                }
+                            }
+                        }
+                        
+                        // Show item description if available (optional)
+                        if (item.getType() != ItemType::NULLITEM) {
+                            ImGui::SameLine();
+                            ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "(%s)", 
+                                item.getType() == ItemType::FOOD ? "Food" :
+                                item.getType() == ItemType::BANDAGE ? "Bandage" : "Item");
+                        }
+                    }
+                }
+                break;
+            }
+        }
+        
+        ImGui::Separator();
+        
+        // Add a "Drop Item" section
+        ImGui::Text("Drop an item here:");
+        array<Item, 5> inventory = player->getInventory();
+        bool hasItems = false;
+        
+        for (size_t i = 0; i < inventory.size(); ++i) {
+            const Item& item = inventory[i];
+            if (item.getType() != ItemType::NULLITEM) {
+                hasItems = true;
+                
+                ImGui::Text("%s", item.getName().c_str());
+                ImGui::SameLine();
+                
+                string dropBtnLabel = "Drop##inventory_" + to_string(i);
+                if (ImGui::Button(dropBtnLabel.c_str())) {
+                    bool success = dropItem(roomName, locationName, item.getName());
+                    if (success) {
+                        push_log("Dropped " + item.getName() + " into the " + locationName + ".");
+                    } else {
+                        push_log("Failed to drop " + item.getName() + ".");
+                    }
+                }
+            }
+        }
+        
+        if (!hasItems) {
+            ImGui::Text("(no items to drop)");
+        }
+        
+        ImGui::Separator();
+        
+        // Close button
+        if (ImGui::Button("Close")) {
+            showStorageWindow = false;
+        }
+    }
+    ImGui::End();
+}
+
 string GameEngine::printArt(const string& image)
 {
     ifstream file("ASCII.txt");
