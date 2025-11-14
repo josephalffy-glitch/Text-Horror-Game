@@ -39,7 +39,7 @@ int main(int, char**)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
 
-    GLFWwindow* window = glfwCreateWindow(1280, 720, "Text Adventure - ImGui UI", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(1280, 720, "Text Adventure", NULL, NULL);
     if (!window) return 1;
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1);
@@ -77,6 +77,7 @@ int main(int, char**)
     static char hairBuffer[64] = "";
     static char eyesBuffer[64] = "";
     static bool playerCreated = false;
+    static bool titleScreenDone = false;
     
     //bools
     //bool itemWindow = false;
@@ -88,9 +89,59 @@ int main(int, char**)
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         NewFrame();
+        //Title screen
+        if(!titleScreenDone) //if title scene is not done
+        {
+            ImGui::SetNextWindowSize(ImVec2(900, 500), ImGuiCond_Always); //makes window larger
+            Begin("Title Screen");
+            currentArt = gameEngine.printArt("TitleScreen"); //sets up ascii art 
 
+            if (!currentArt.empty())
+            {
+                Separator();
+                float textWidth = ImGui::CalcTextSize(currentArt.c_str()).x; //gets art width
+                float windowWidth = ImGui::GetWindowSize().x; //gets window width
+                //centers the art
+                float cursorPosX = (windowWidth - textWidth) * 0.5f;
+                SetCursorPosX(cursorPosX);
+                TextUnformatted(currentArt.c_str());
+            }
+
+            float windowWidth = ImGui::GetWindowSize().x;
+            float buttonWidth = ImGui::CalcTextSize("Start Game").x + ImGui::GetStyle().FramePadding.x * 2;
+
+            float posX = (windowWidth - buttonWidth) * 0.5f;
+            SetCursorPosX(posX);
+
+            if(Button("Start Game"))
+            {
+                titleScreenDone = true;
+            }
+
+            //float windowWidth2 = ImGui::GetWindowSize().x;
+            float buttonWidth2 = ImGui::CalcTextSize("Start Game").x + ImGui::GetStyle().FramePadding.x * 2;
+
+            float posX2 = (windowWidth - buttonWidth2) * 0.5f;
+            ImGui::SetCursorPosX(posX2);
+            if(Button("Load Game"))
+            {
+                //call loading function
+                //gameEngine.loadGame("save.txt");
+            }
+            End();
+
+            Render();
+            int display_w, display_h;
+            glfwGetFramebufferSize(window, &display_w, &display_h);
+            glViewport(0, 0, display_w, display_h);
+            glClearColor(0.10f, 0.12f, 0.14f, 1.00f);
+            glClear(GL_COLOR_BUFFER_BIT);
+            ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+            glfwSwapBuffers(window);
+            continue;
+        }
         // -------------------- Character creation window --------------------
-        if (!playerCreated) 
+        if (!playerCreated && titleScreenDone) 
         {
             Begin("Character Creation", nullptr, ImGuiWindowFlags_AlwaysAutoResize); //creates window that autoresizes
             Text("Welcome adventurer! Create your character:"); //outputs text
@@ -150,7 +201,7 @@ int main(int, char**)
                     push_log(">>>> pencils, a boxcutter, bandaids, a snack bar, a pocket mirror\n");
                     push_log("The mirror catches your eye. Would you like to take a look?");
                     //add new window with pocket mirror art
-                    Begin("Scene", nullptr, ImGuiWindowFlags_NoCollapse);
+                    Begin("Item", nullptr, ImGuiWindowFlags_NoCollapse);
                     currentArt = gameEngine.printArt("PocketMirror");
                     End();
                     mirrorScene = true;
@@ -161,7 +212,7 @@ int main(int, char**)
                     if (Button("Yes")) 
                     {
                         push_log("\nYou open the mirror and see your " + player.getEyes() + " eyes staring back at you.\nYou decide to hold on to the mirror.\nIt could come in handy.\n");
-                        //player.addToInventory("Pocket Mirror");
+                        gameEngine.pickUpItem("Bedroom", "Drawer", "mirror");
                         //itemWindow = true;
                         mirrorScene = false;
                         checkedDrawer = true;
@@ -294,6 +345,7 @@ int main(int, char**)
             if (!!(inv[i].getType() == ItemType::NULLITEM) && Button(btnLabel2.c_str())) 
             {
                 //player.dropItem();
+                //gameEngine.dropItem();
                 push_log("Dropped item: " + inv[i].getName());
                 
             }
