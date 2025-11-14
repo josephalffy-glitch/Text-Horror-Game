@@ -203,17 +203,6 @@ int main(int, char**)
                     currentStorageLocation = "Drawer";
                     currentRoomName = "Bedroom";
                     gameEngine.lookInStorageLocation(currentRoomName, currentStorageLocation, showStorageWindow, message_log);
-
-                    /*
-                    push_log("\nYou walk over to the drawer on your desk and take a look.\nInside you see a few miscellaneous items:");
-                    push_log(">>>> pencils, a boxcutter, bandaids, a snack bar, a pocket mirror\n");
-                    push_log("The mirror catches your eye. Would you like to take a look?");
-                    //add new window with pocket mirror art
-                    Begin("Item", nullptr, ImGuiWindowFlags_NoCollapse);
-                    currentArt = gameEngine.printArt("PocketMirror");
-                    End();
-                    mirrorScene = true;
-                    */
                 }
 
                 if (mirrorScene) 

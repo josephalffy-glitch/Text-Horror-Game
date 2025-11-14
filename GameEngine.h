@@ -44,7 +44,6 @@ class GameEngine {
         bool checkForItemInLocation(const string& roomName, const string& locationName, const string& item);
         bool pickUpItem(const string& roomName, const string& locationName, const string itemName);
         bool dropItem(const string& roomName, const string& locationName, const string itemName);
-        //void lookInStorageLocation(const string& roomName, const string& locationName);
         void lookInStorageLocation(const string& roomName, const string& locationName, bool& showStorageWindow, std::string& message_log);
         void renderStorageLocationWindow(const string& roomName, const string& locationName, bool& showStorageWindow, std::string& message_log);
 };
