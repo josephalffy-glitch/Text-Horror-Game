@@ -409,25 +409,15 @@ int main(int, char**)
             if (item.empty()) item = "(empty)";
             Text("%d: %s", (int)i+1, item.c_str());
 
-            // Button to use item
-            SameLine();
-            std::string btnLabel = "Drop##" + std::to_string(i);
-            if (!(inv[i].getType() == ItemType::NULLITEM) && Button(btnLabel.c_str())) 
+            if (inv[i].getType() != ItemType::NULLITEM) 
             {
-                //player.checkInventory();
-                push_log("Used item: " + inv[i].getName());
-                //use item function
-            }
-                        // Button to use item
-
-            SameLine();
-            std::string btnLabel2 = "Use##" + std::to_string(i);
-            if (!!(inv[i].getType() == ItemType::NULLITEM) && Button(btnLabel2.c_str())) 
-            {
-                //player.dropItem();
-                //gameEngine.dropItem();
-                push_log("Dropped item: " + inv[i].getName());
-                
+                SameLine();
+                std::string btnLabel = "Use##" + std::to_string(i);
+                if (Button(btnLabel.c_str())) 
+                {
+                    //gameEngine.useItem();
+                    push_log("Used item: " + inv[i].getName());
+                }
             }
         }
 
