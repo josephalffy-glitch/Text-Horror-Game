@@ -2,8 +2,8 @@
 CXX = g++
 CXXFLAGS = -Iextern/imgui -Iglfw/include -O2 -std=c++17 -Wall
 
-# Library paths and linked libraries
-LIBS = -Lglfw/include/lib-mingw-w64 -lglfw3 -lopengl32 -lgdi32
+# Library paths and linked libraries (works with mac)
+LIBS = -lglfw -framework OpenGL -framework Cocoa -framework IOKit -framework CoreFoundation
 
 # ------------------------------------------
 # Source files
