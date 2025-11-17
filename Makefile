@@ -28,6 +28,7 @@ else
 		endif
 	else
 		# Linux or other Unix
+		CXXFLAGS += -Iopengl/include
 		LIBS = -lglfw -lGL -lm -ldl -lpthread
 		TARGET = Game
 		PLATFORM = Linux/Unix
