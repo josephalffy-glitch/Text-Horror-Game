@@ -1,8 +1,8 @@
 # Compiler and flags
 CXX = g++
 CC = gcc
-CXXFLAGS = -Iextern/imgui -Iextern/glfw/include -Iopengl/include -O2 -std=c++17 -Wall
-CFLAGS = -Iextern/glfw/include -Iopengl/include -O2 -Wall
+CXXFLAGS = -Iextern/imgui -Iextern/glfw/include -Iextern/opengl/include -O2 -std=c++17 -Wall
+CFLAGS = -Iextern/glfw/include -Iextern/opengl/include -O2 -Wall
 
 # Platform-specific settings
 ifeq ($(OS), Windows_NT)
@@ -46,9 +46,10 @@ else
             CC = clang
         endif
     else
-        # Linux
+        # Linux - Add X11 include path
         PLATFORM = Linux/Unix
         TARGET = Game
+        CFLAGS += -Iextern/x11/include
         GLFW_PLATFORM_SRCS = extern/glfw/src/x11_init.c \
                             extern/glfw/src/x11_monitor.c \
                             extern/glfw/src/x11_window.c \
@@ -60,7 +61,7 @@ else
                             extern/glfw/src/osmesa_context.c \
                             extern/glfw/src/linux_joystick.c
         GLFW_CFLAGS = -D_GLFW_X11 -D_GLFW_HAS_XF86VM=0 -D_GLFW_HAS_XRANDR=0 -D_GLFW_HAS_XINERAMA=0 -D_GLFW_HAS_XKBCOMMON=0
-        LIBS = -lGL -lm -ldl -lpthread -lX11 -lXrandr -lXinerama -lXcursor -lXi
+        LIBS = -lGL -lm -ldl -lpthread -lX11
     endif
 endif
 
