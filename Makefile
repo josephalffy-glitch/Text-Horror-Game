@@ -59,7 +59,7 @@ else
                             extern/glfw/src/egl_context.c \
                             extern/glfw/src/osmesa_context.c \
                             extern/glfw/src/linux_joystick.c
-        GLFW_CFLAGS = -D_GLFW_X11
+        GLFW_CFLAGS = -D_GLFW_X11 -D_GLFW_HAS_XF86VM=0 -D_GLFW_HAS_XRANDR=0 -D_GLFW_HAS_XINERAMA=0 -D_GLFW_HAS_XKBCOMMON=0
         LIBS = -lGL -lm -ldl -lpthread -lX11 -lXrandr -lXinerama -lXcursor -lXi
     endif
 endif
