@@ -2,12 +2,22 @@
 CXX = g++
 CXXFLAGS = -Iextern/imgui -Iglfw/include -O2 -std=c++17 -Wall
 
-# Library paths and linked libraries (MAC/LINUX COMPATIBLE)
-LIBS = -lglfw -framework OpenGL -framework Cocoa -framework IOKit -framework CoreFoundation
+# Platform-specific libraries
+UNAME_S := $(shell uname -s)
 
-# ------------------------------------------
+ifeq ($(UNAME_S), Darwin)
+    # macOS
+    LIBS = -lglfw \
+           -framework OpenGL \
+           -framework Cocoa \
+           -framework IOKit \
+           -framework CoreFoundation
+else
+    # Windows (MinGW)
+    LIBS = -Lglfw/include/lib-mingw-w64 -lglfw3 -lopengl32 -lgdi32
+endif
+
 # Source files
-# ------------------------------------------
 SRCS = main.cpp \
        player.cpp \
        GameEngine.cpp \
@@ -26,7 +36,7 @@ OBJS = $(SRCS:.cpp=.o)
 IMGUI_OBJS = $(IMGUI_SRCS:.cpp=.o)
 TARGET = Game.exe
 
-# Build rules
+
 # Default build
 all: $(TARGET)
 
@@ -44,7 +54,12 @@ run: $(TARGET)
 
 # Clean build files
 clean:
+ifeq ($(OS),Windows_NT)
 	del /Q *.o *.exe *.gch 2>nul
 	for /R extern\imgui %%f in (*.o) do del "%%f" 2>nul
+else
+	rm -f *.o *.gch $(TARGET)
+	find extern/imgui -name "*.o" -delete
+endif
 
 .PHONY: all run clean
