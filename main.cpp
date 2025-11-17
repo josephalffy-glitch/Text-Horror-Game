@@ -14,7 +14,6 @@
 
 using namespace ImGui;
 
-
 // Forward declare GLFW error callback
 static void glfw_error_callback(int error, const char* description);
 
@@ -24,11 +23,6 @@ enum Rooms {
     ROOM_KITCHEN,
     ROOM_LIVING,
 };
-
-/*enum BedroomChoice
-{   BedroomChoice_Default,  
-    BedroomChoice_Mirror
-};*/
 
 int main(int, char**)
 {
@@ -85,10 +79,13 @@ int main(int, char**)
     static bool titleScreenDone = false;
     static bool saveClicked = false;
     static bool quitClicked = false;
+    
+    // Power Meter Minigame state
     bool powerGameActive = false; 
     PowerMeterMinigame powerGame;
-    bool powerGameFinished = false;
-    bool powerGameWin = false;
+    static bool powerGameFinished = false;
+    static bool powerGameWin = false;
+    static bool powerOutageTriggered = false; // New tracker for the story
 
     //Main loop
     while (!glfwWindowShouldClose(window))
@@ -98,26 +95,24 @@ int main(int, char**)
         ImGui_ImplGlfw_NewFrame();
         NewFrame();
         //Title screen
-        if(!titleScreenDone) //if title scene is not done
+        if(!titleScreenDone) 
         {
-            ImGui::SetNextWindowSize(ImVec2(900, 500), ImGuiCond_Always); //makes window larger
+            ImGui::SetNextWindowSize(ImVec2(900, 500), ImGuiCond_Always);
             Begin("Title Screen");
-            currentArt = gameEngine.printArt("TitleScreen"); //sets up ascii art 
+            currentArt = gameEngine.printArt("TitleScreen");
 
             if (!currentArt.empty())
             {
                 Separator();
-                float textWidth = ImGui::CalcTextSize(currentArt.c_str()).x; //gets art width
-                float windowWidth = ImGui::GetWindowSize().x; //gets window width
-                //centers the art
+                float textWidth = ImGui::CalcTextSize(currentArt.c_str()).x;
+                float windowWidth = ImGui::GetWindowSize().x;
                 float cursorPosX = (windowWidth - textWidth) * 0.5f;
                 SetCursorPosX(cursorPosX);
-                TextUnformatted(currentArt.c_str()); //shows art
+                TextUnformatted(currentArt.c_str());
             }
 
             float windowWidth = ImGui::GetWindowSize().x;
             float buttonWidth = ImGui::CalcTextSize("Start Game").x + ImGui::GetStyle().FramePadding.x * 2;
-            //centers start game button
             float posX = (windowWidth - buttonWidth) * 0.5f; 
             SetCursorPosX(posX);
 
@@ -125,14 +120,13 @@ int main(int, char**)
             {
                 titleScreenDone = true;
             }
-            float buttonWidth2 = ImGui::CalcTextSize("Start Game").x + ImGui::GetStyle().FramePadding.x * 2; //gets button width
-            //centers load game button
+            float buttonWidth2 = ImGui::CalcTextSize("Load Game").x + ImGui::GetStyle().FramePadding.x * 2;
             float posX2 = (windowWidth - buttonWidth2) * 0.5f;
             ImGui::SetCursorPosX(posX2);
             if(Button("Load Game"))
             {
-                //call loading function
-                //gameEngine.loadGame("save.txt");
+                // gameEngine.loadGame("save.txt");
+                push_log("Load Game not yet implemented.");
             }
             End();
 
@@ -149,13 +143,13 @@ int main(int, char**)
         // -------------------- Character creation window --------------------
         if (!playerCreated && titleScreenDone) 
         {
-            Begin("Character Creation", nullptr, ImGuiWindowFlags_AlwaysAutoResize); //creates window that autoresizes
-            Text("Welcome adventurer! Create your character:"); //outputs text
-            InputText("Name", nameBuffer, IM_ARRAYSIZE(nameBuffer)); //creates buffer for name
-            InputText("Hair Color", hairBuffer, IM_ARRAYSIZE(hairBuffer)); //creates buffer for hair
-            InputText("Eye Color", eyesBuffer, IM_ARRAYSIZE(eyesBuffer)); //creates buffer for eye color
+            Begin("Character Creation", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
+            Text("Welcome adventurer! Create your character:");
+            InputText("Name", nameBuffer, IM_ARRAYSIZE(nameBuffer));
+            InputText("Hair Color", hairBuffer, IM_ARRAYSIZE(hairBuffer));
+            InputText("Eye Color", eyesBuffer, IM_ARRAYSIZE(eyesBuffer));
 
-            if (Button("Create Player")) //when player clicks create player button
+            if (Button("Create Player"))
             {
                 player.setName(nameBuffer);
                 player.setHair(hairBuffer);
@@ -173,7 +167,7 @@ int main(int, char**)
             glClear(GL_COLOR_BUFFER_BIT);
             ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
             glfwSwapBuffers(window);
-            continue; // skip the rest of the loop until player is created
+            continue;
         }
 
         
@@ -197,7 +191,6 @@ int main(int, char**)
                 {
                     player.heal(1);
                     push_log("You rested on the bed. (health updated)");
-                    //update health here
                     rested = true;
                 }
 
@@ -206,8 +199,12 @@ int main(int, char**)
                     currentStorageLocation = "Drawer";
                     currentRoomName = "Bedroom";
                     gameEngine.lookInStorageLocation(currentRoomName, currentStorageLocation, showStorageWindow, message_log);
+                    checkedDrawer = true;
                 }
-
+                
+                // We're skipping the old Yes/No prompt here (the original `mirrorScene` logic)
+                // because the new Storage Location window (renderStorageLocationWindow) handles item picking up directly.
+                /*
                 if (mirrorScene) 
                 {
                     if (Button("Yes")) 
@@ -225,12 +222,11 @@ int main(int, char**)
                         checkedDrawer = true;
                     }
                 }
+                */
 
-                if (!checkedTrophy && !mirrorScene && Button("Check out the trophy")) 
+                if (!checkedTrophy && Button("Check out the trophy")) 
                 {
                     push_log("The trophy is shiny and reminds you of your victories. " + player.getName() + " is printed on it.");
-                    //add new window with trophy ascii art
-
                     checkedTrophy = true;
                 }
 
@@ -247,36 +243,54 @@ int main(int, char**)
 
             case ROOM_KITCHEN:
             {
-                TextWrapped("\nYou run to the kitchen, ready for a fresh meal.\n");
+                TextWrapped("You run to the kitchen, ready for a fresh meal.\nYour mom turns around with a plate of waffles drenched in syrup.\nAs she sets the plate down, you notice her right hand is bandaged up.");
                 currentArt = gameEngine.printArt("Kitchen");
-                //push_log("Your mom turns around with a plate of waffles drenched in syrup.\n");
-                //push_log("As your mom sets the plate on the dining table you take a notice of her right hand.\nIt's bandaged up.\n");
 
-
-                //track choices
+                // Story trackers
                 static bool ateBreakfast = false;
-                static bool searchedCupboards = false;
                 static bool askedAboutHand = false;
+                static bool checkedCabinet = false; // Tracker for the third required action
 
                 if (!ateBreakfast && Button("Eat breakfast")) 
                 {
-                    //player.updateHealth("breakfast");
+                    player.heal(1); // Assuming breakfast heals slightly, like the old logic
                     push_log("You ate breakfast. (health updated)");
                     ateBreakfast = true;
                 }
+
                 if (!askedAboutHand && Button("Ask your mom about her hand")) 
                 {
-                    push_log(player.getName() + ": What happened to your hand mom?\n");
+                    push_log(player.getName() + ": What happened to your hand mom?");
+                    push_log(">> Mom: Oh! I was just cleaning the basement and touched some broken glass. No big deal sweetie.");
                     askedAboutHand = true;
                 }
-//-------------------------POWER METER TEST-------------------------------
-                if (Button("POWER METER GAME (FOR TESTING ONLY)"))
+
+                // Logic to open the Cabinet storage location (to get Syrup/Cookie)
+                if (!checkedCabinet && Button("Search Kitchen Cabinet")) 
                 {
+                    currentStorageLocation = "Cabinet";
+                    currentRoomName = "Kitchen";
+                    gameEngine.lookInStorageLocation(currentRoomName, currentStorageLocation, showStorageWindow, message_log);
+                    checkedCabinet = true; 
+                    push_log("You open the kitchen cabinet. You can take a look inside the new window.");
+                }
+                
+                //-------------------------POWER OUTAGE EVENT START-------------------------------
+                // The power outage occurs when all main kitchen actions are completed
+                if (ateBreakfast && askedAboutHand && checkedCabinet && !powerOutageTriggered) 
+                {
+                    push_log("\n------------------------------------------------");
+                    push_log("A sudden darkness envelops the kitchen. The lights flicker and die.");
+                    push_log(">> Mom: Oh no, the power must be out! I hate when that happens.");
+                    push_log("You hear a strange humming sound from the basement door.");
+                    push_log(">> Mom: Honey, can you go check the auxiliary power unit down in the cellar?");
+                    push_log("------------------------------------------------\n");
+                    
                     powerGameActive = true;
-                    powerGameFinished = false;
-                    powerGame = PowerMeterMinigame();
+                    powerOutageTriggered = true; // Set to true so this only triggers once
                 }
 
+                // The minigame display window (uses the existing structure)
                 if (powerGameActive && !powerGameFinished)
                 {
                     Begin("Power Meter");
@@ -306,57 +320,100 @@ int main(int, char**)
                     {
                         powerGameFinished = true;
                         powerGameWin = powerGame.checkWinCondition(powerGame.cursorPosition);
-                        powerGameActive = false; //stop updating
                     }
 
                     End();
                 }
 
+                // Minigame Result window
                 if (powerGameFinished)
                 {
-                    Begin("Power Meter Result");
+                    Begin("Power Meter Result", &powerGameFinished, ImGuiWindowFlags_AlwaysAutoResize);
                     if (powerGameWin) 
                     {
-                        Text("The power is back.");
+                        Text("Success! The power is back.");
+                        push_log("\n>> Mom: That's my kid! The lights are back on. Thanks, sweetie!\n");
                     } else 
                     {
-                        Text("Oh no, I missed it.");
+                        Text("Oh no, I missed it. The lights flicker back on but seem unstable.");
+                        push_log("\n>> Mom: Well, the lights are back on, but that was a bit rough. Maybe be more careful next time!\n");
                     }
                     if (Button("Close")) 
                     {
                         powerGameFinished = false;
+                        powerGameActive = false;
                     }
                     End();
                 }
+                //-------------------------POWER OUTAGE EVENT END---------------------------------
 
-//----------------------END POWER METER------------------------------------              
 
-                //move to living room
-                if (ateBreakfast && searchedCupboards) 
+                // move to living room only when minigame is completed and closed
+                if (powerOutageTriggered && !powerGameActive && !powerGameFinished) 
                 {
                     currentRoom = ROOM_LIVING;
-                    push_log("You finished all Kitchen actions. Moving to Living Room...");
+                    push_log("You finish breakfast and get ready for the day. Moving to Living Room...");
                 }
                 break;
             }
 
             case ROOM_LIVING:
             {
-                TextWrapped("You are in the living room. A TV sits on a stand.");
-                currentArt = gameEngine.printArt("Living Room");
+                TextWrapped("You are in the living room. A large, blank TV sits on a stand.");
+                currentArt = gameEngine.printArt("Bedroom"); // Use a neutral background art
 
                 static bool inspectedTV = false;
+                static bool endingTriggered = false;
 
                 if (!inspectedTV && Button("Inspect TV")) 
                 {
-                    push_log("The TV is blank. Nothing interesting.");
+                    push_log("You walk up to the TV. The screen flickers with static before a single word appears: 'WATCH'.");
+                    currentArt = gameEngine.printArt("BrokenMirror"); // Creepy static flash
                     inspectedTV = true;
                 }
 
-                // All actions done
-                if (inspectedTV) 
+                // Horror Ending Logic
+                if (inspectedTV && !endingTriggered) 
                 {
-                    push_log("You finished all Living Room actions. Adventure complete!");
+                    // Check if player has the Pocket Mirror item
+                    std::array<Item, 5> inv = player.getInventory();
+                    bool hasPocketMirror = false;
+                    for (const auto& item : inv) {
+                        if (item.getName() == "mirror") {
+                            hasPocketMirror = true;
+                            break;
+                        }
+                    }
+
+                    if (hasPocketMirror) 
+                    {
+                        push_log("\nThe word on the screen burns into your mind. You instinctively reach for your pocket mirror.");
+                        if (Button("Look in Pocket Mirror")) 
+                        {
+                            push_log("\nAs you raise the small mirror to your face, your reflection is not your own. It's a mangled, smiling figure with your mother's bandaged hand covering its mouth.");
+                            currentArt = gameEngine.printArt("BrokenMirror"); // Final spooky image
+                            push_log("\n**END OF DAY 1: A FAMILIAR FACE**");
+                            endingTriggered = true;
+                        }
+                    } 
+                    else 
+                    {
+                        push_log("\nWith the TV message burning in your mind, you feel a cold, unsettling presence behind you.");
+                        if (Button("Turn Around")) 
+                        {
+                            push_log("\nIt's your mother, but her eyes are wide and black. She whispers: 'You shouldn't have fixed the power.'");
+                            push_log("The door slams shut, plunging you into darkness.");
+                            push_log("\n**END OF DAY 1: MOM'S SECRET**");
+                            endingTriggered = true;
+                        }
+                    }
+                }
+
+                // Final message
+                if (endingTriggered) 
+                {
+                    Separator();
+                    TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "DAY 1 HAS CONCLUDED. TO BE CONTINUED...");
                 }
                 break;
             }
@@ -365,12 +422,12 @@ int main(int, char**)
         // Display ASCII Art
         if (!currentArt.empty()) 
         {
-            Separator(); //draws line
+            Separator();
             TextUnformatted(currentArt.c_str());
         }
 
         // Message log
-        Separator(); //draws line
+        Separator();
         TextWrapped("Message Log:");
         BeginChild("LogRegion", ImVec2(0,150), true, ImGuiWindowFlags_HorizontalScrollbar);
         TextUnformatted(message_log.c_str());
@@ -380,7 +437,8 @@ int main(int, char**)
         if(Button("Save"))
         {
             saveClicked = true;
-            //gameEngine.saveGame("");
+            // gameEngine.saveGame("");
+            push_log("Saving not yet implemented.");
         }
 
         SameLine();
@@ -400,7 +458,7 @@ int main(int, char**)
         Text("Eyes: %s", player.getEyes().c_str());
 
 //------------Inventory-------------------------
-        Separator(); //draws line
+        Separator();
         Text("Inventory:");
         array<Item, 5> inv = player.getInventory();
         for (size_t i = 0; i < inv.size(); ++i) 
@@ -421,24 +479,24 @@ int main(int, char**)
         }
 
 
+//------------------Health-------------------
+        Separator();   
+        Text("Health:");
 
-//------------------Health----------------------------
-        Separator();//draws line   
-        Text("Health:"); //prints health
-
-        int current = player.getCurrentHealth(); //gets current player health
-        int max = player.getMaxHealth(); //gets max player healht (5)
+        int current = player.getCurrentHealth();
+        int max = player.getMaxHealth();
 
         // Draw hearts inline
-        for (int i = 0; i < max; ++i)//loops through each "heart"
+        for (int i = 0; i < max; ++i)
         {
-            if (i < current) //check all hearts up to current and colors it
+            if (i < current)
                 TextColored(ImVec4(1.0f, 0.2f, 0.2f, 1.0f), "O"); // red heart
             else
-                TextColored(ImVec4(0.5f, 0.5f, 0.5f, 0.5f), "X"); // gray hearSt
-            SameLine(); //keeps hearts on same line
+                TextColored(ImVec4(0.5f, 0.5f, 0.5f, 0.5f), "X"); // gray heart
+            SameLine();
         }
 
+        // Render the Storage Location (Drawer/Cabinet) window if triggered
         if (showStorageWindow) {
             gameEngine.renderStorageLocationWindow(currentRoomName, currentStorageLocation, showStorageWindow, message_log);
         }
