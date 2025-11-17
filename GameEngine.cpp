@@ -101,7 +101,7 @@ void GameEngine::useItem(const string& itemName, std::string& message_log){
                     player->removeFromInventory(itemName);
                     return;
                 case ItemType::MIRROR:
-                    push_log("\nYou open the mirror and see your " + player->getEyes() + " eyes staring back at you.");
+                    push_log("\nYou hold the mirror up and see your " + player->getEyes() + " eyes staring back at you.");
                     return;
                 default:
                     push_log(itemName + " cannot be used right now.");
