@@ -1,25 +1,15 @@
 # Compiler and flags
 CXX = g++
 CC = gcc
-CXXFLAGS = -Iextern/imgui -Iextern/glfw/include -Iextern/opengl/include -O2 -std=c++17 -Wall
-CFLAGS = -Iextern/glfw/include -Iextern/opengl/include -O2 -Wall
+CXXFLAGS = -Iextern/imgui -Iextern/opengl/include -O2 -std=c++17 -Wall
 
 # Platform-specific settings
 ifeq ($(OS), Windows_NT)
     # Windows
     PLATFORM = Windows
     TARGET = Game.exe
-    GLFW_PLATFORM_SRCS = extern/glfw/src/win32_init.c \
-                        extern/glfw/src/win32_joystick.c \
-                        extern/glfw/src/win32_monitor.c \
-                        extern/glfw/src/win32_time.c \
-                        extern/glfw/src/win32_thread.c \
-                        extern/glfw/src/win32_window.c \
-                        extern/glfw/src/wgl_context.c \
-                        extern/glfw/src/egl_context.c \
-                        extern/glfw/src/osmesa_context.c
-    GLFW_CFLAGS = -D_GLFW_WIN32
-    LIBS = -lopengl32 -lgdi32 -luser32 -lkernel32
+    CXXFLAGS += -Iglfw/include
+    LIBS = -Lglfw/include/lib-mingw-w64 -lglfw3 -lopengl32 -lgdi32 -luser32 -lkernel32
 else
     # Try to detect Unix-like systems
     UNAME_S := $(shell uname -s 2>/dev/null || echo Unknown)
@@ -27,56 +17,24 @@ else
         # macOS
         PLATFORM = macOS
         TARGET = Game
-        GLFW_PLATFORM_SRCS = extern/glfw/src/cocoa_init.m \
-                            extern/glfw/src/cocoa_joystick.m \
-                            extern/glfw/src/cocoa_monitor.m \
-                            extern/glfw/src/cocoa_time.c \
-                            extern/glfw/src/posix_thread.c \
-                            extern/glfw/src/cocoa_window.m \
-                            extern/glfw/src/nsgl_context.m \
-                            extern/glfw/src/egl_context.c \
-                            extern/glfw/src/osmesa_context.c
-        GLFW_CFLAGS = -D_GLFW_COCOA
-        LIBS = -framework OpenGL -framework Cocoa -framework IOKit -framework CoreFoundation
+        LIBS = -lglfw -framework OpenGL -framework Cocoa -framework IOKit -framework CoreFoundation
         ifeq ($(shell which clang++ 2>/dev/null),)
             CXX = g++
-            CC = gcc
         else
             CXX = clang++
-            CC = clang
         endif
     else
-        # Linux - Add X11 include path
+        # Linux - Try to use any available GLFW
         PLATFORM = Linux/Unix
         TARGET = Game
-        CFLAGS += -Iextern/x11/include
-        GLFW_PLATFORM_SRCS = extern/glfw/src/x11_init.c \
-                            extern/glfw/src/x11_monitor.c \
-                            extern/glfw/src/x11_window.c \
-                            extern/glfw/src/xkb_unicode.c \
-                            extern/glfw/src/posix_time.c \
-                            extern/glfw/src/posix_thread.c \
-                            extern/glfw/src/glx_context.c \
-                            extern/glfw/src/egl_context.c \
-                            extern/glfw/src/osmesa_context.c \
-                            extern/glfw/src/linux_joystick.c
-        GLFW_CFLAGS = -D_GLFW_X11 -D_GLFW_HAS_XF86VM=0 -D_GLFW_HAS_XRANDR=0 -D_GLFW_HAS_XINERAMA=0 -D_GLFW_HAS_XKBCOMMON=0
-        LIBS = -lGL -lm -ldl -lpthread -lX11
+        # Try different GLFW library names
+        GLFW_LIB := $(shell pkg-config --libs glfw3 2>/dev/null || echo "-lglfw")
+        GL_LIBS := $(shell pkg-config --libs gl 2>/dev/null || echo "-lGL")
+        LIBS = $(GLFW_LIB) $(GL_LIBS) -lm -ldl -lpthread
     endif
 endif
 
-# Common GLFW source files (platform-independent)
-GLFW_COMMON_SRCS = extern/glfw/src/context.c \
-                   extern/glfw/src/init.c \
-                   extern/glfw/src/input.c \
-                   extern/glfw/src/monitor.c \
-                   extern/glfw/src/vulkan.c \
-                   extern/glfw/src/window.c
-
-# All GLFW sources
-GLFW_SRCS = $(GLFW_COMMON_SRCS) $(GLFW_PLATFORM_SRCS)
-
-# Your game source files
+# Your game source files only - no GLFW compilation
 GAME_SRCS = main.cpp \
             player.cpp \
             GameEngine.cpp \
@@ -94,12 +52,6 @@ IMGUI_SRCS = extern/imgui/imgui.cpp \
 # Object files
 GAME_OBJS = $(GAME_SRCS:.cpp=.o)
 IMGUI_OBJS = $(IMGUI_SRCS:.cpp=.o)
-GLFW_OBJS = $(GLFW_SRCS:.c=.o)
-
-# Handle .m files for macOS
-ifeq ($(UNAME_S), Darwin)
-    GLFW_OBJS := $(GLFW_OBJS:.m=.o)
-endif
 
 # Default build
 all: $(TARGET)
@@ -108,17 +60,9 @@ all: $(TARGET)
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-# Compile C files (GLFW)
-%.o: %.c
-	$(CC) $(CFLAGS) $(GLFW_CFLAGS) -c $< -o $@
-
-# Compile Objective-C files (macOS only)
-%.o: %.m
-	$(CC) $(CFLAGS) $(GLFW_CFLAGS) -c $< -o $@
-
 # Link all object files
-$(TARGET): $(GAME_OBJS) $(IMGUI_OBJS) $(GLFW_OBJS)
-	$(CXX) $(GAME_OBJS) $(IMGUI_OBJS) $(GLFW_OBJS) $(LIBS) -o $(TARGET)
+$(TARGET): $(GAME_OBJS) $(IMGUI_OBJS)
+	$(CXX) $(GAME_OBJS) $(IMGUI_OBJS) $(LIBS) -o $(TARGET)
 
 # Run the game
 run: $(TARGET)
@@ -144,9 +88,16 @@ endif
 info:
 	@echo "Platform: $(PLATFORM)"
 	@echo "OS: $(OS)"
-	@echo "Compiler: $(CXX) / $(CC)"
+	@echo "Compiler: $(CXX)"
 	@echo "Target: $(TARGET)"
 	@echo "Libraries: $(LIBS)"
-	@echo "GLFW Platform Sources: $(GLFW_PLATFORM_SRCS)"
 
-.PHONY: all run clean info
+# Install dependencies help
+deps:
+	@echo "To install dependencies:"
+	@echo "Ubuntu/Debian: apt install libglfw3-dev libgl1-mesa-dev"
+	@echo "Fedora: dnf install glfw-devel mesa-libGL-devel"
+	@echo "Arch: pacman -S glfw-wayland mesa"
+	@echo "macOS: brew install glfw"
+
+.PHONY: all run clean info deps
