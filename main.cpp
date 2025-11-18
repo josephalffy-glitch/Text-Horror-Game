@@ -2,12 +2,7 @@
 #include "extern/imgui/backends/imgui_impl_glfw.h"
 #include "extern/imgui/backends/imgui_impl_opengl3.h"
 #include <stdio.h>
-// Use different GLFW include based on platform
-#ifdef _WIN32
-    #include "glfw/include/GLFW/glfw3.h"
-#else
-    #include <GLFW/glfw3.h>  // System GLFW on Linux/macOS
-#endif
+#include "glfw/include/GLFW/glfw3.h"
 #include <string>
 #include <vector>
 #include <sstream>
