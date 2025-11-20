@@ -115,8 +115,8 @@ extern "C" {
  #endif
 
  #if defined(GLFW_EXPOSE_NATIVE_X11) || defined(GLFW_EXPOSE_NATIVE_GLX)
-  #include <X11/Xlib.h>
-  #include <X11/extensions/Xrandr.h>
+  #include <../../extern/x11/include/X11/Xlib.h>
+  #include <../../extern/x11/include/X11/extensions/Xrandr.h>
  #endif
 
  #if defined(GLFW_EXPOSE_NATIVE_WAYLAND)

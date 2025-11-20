@@ -9,6 +9,7 @@ enum class ItemType {
     BANDAGE,
     KEY,
     MISC,
+    MIRROR,
     NULLITEM
 };
 

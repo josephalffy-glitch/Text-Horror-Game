@@ -5,7 +5,7 @@
 #include <chrono>
 
 class PowerMeterMinigame {
-private:
+public:
     int meterWidth;
     int targetZoneStart;
     int targetZoneEnd;
@@ -21,6 +21,7 @@ private:
     bool keyPressed(); // checks if the user pressed any key
 
 public:
+    
     PowerMeterMinigame(); // the setup function for the minigame
     bool run(); // starts the main game loop
 };
