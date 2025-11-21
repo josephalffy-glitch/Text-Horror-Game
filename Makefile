@@ -39,7 +39,8 @@ GAME_SRCS = main.cpp \
             player.cpp \
             GameEngine.cpp \
             Room.cpp \
-            PowerMeterMinigame.cpp
+            PowerMeterMinigame.cpp \
+            LoadGame.cpp
 
 # ImGui source files
 IMGUI_SRCS = extern/imgui/imgui.cpp \

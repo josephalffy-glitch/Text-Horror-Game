@@ -354,6 +354,119 @@ Room* GameEngine::getCurrentRoom() {
 	return nullptr; // return nullptr if currentRoom is null
 }
 
+// Simple save format (text):
+// line1: name
+// line2: hair
+// line3: eyes
+// line4: comma-separated inventory item names (empty for empty slots)
+// line5: current health (integer)
+
+void GameEngine::saveGame(const string& saveFile)
+{
+    string filename = saveFile;
+    if (filename.empty()) filename = "save.txt";
+    string path = string("SaveFiles/") + filename;
+
+    // Ensure SaveFiles directory exists (best-effort)
+#ifdef _WIN32
+    system("if not exist SaveFiles mkdir SaveFiles >nul");
+#else
+    system("mkdir -p SaveFiles >/dev/null 2>&1");
+#endif
+
+    ofstream ofs(path);
+    if (!ofs.is_open()) {
+        cout << "Failed to open save file for writing: " << path << endl;
+        return;
+    }
+
+    // Write basic player info
+    ofs << player->getName() << "\n";
+    ofs << player->getHair() << "\n";
+    ofs << player->getEyes() << "\n";
+
+    // Inventory as comma-separated names
+    array<Item,5> inv = player->getInventory();
+    for (size_t i = 0; i < inv.size(); ++i) {
+        ofs << inv[i].getName();
+        if (i + 1 < inv.size()) ofs << ",";
+    }
+    ofs << "\n";
+
+    // Current health
+    ofs << player->getCurrentHealth() << "\n";
+
+    ofs.close();
+    cout << "Saved game to " << path << endl;
+}
+
+void GameEngine::loadGame(const string& saveFile)
+{
+    string filename = saveFile;
+    if (filename.empty()) filename = "save.txt";
+    string path = string("SaveFiles/") + filename;
+
+    ifstream ifs(path);
+    if (!ifs.is_open()) {
+        cout << "Failed to open save file: " << path << endl;
+        return;
+    }
+
+    string line;
+    // name
+    if (!getline(ifs, line)) { cout << "Save file malformed (name)\n"; return; }
+    player->setName(line);
+
+    // hair
+    if (!getline(ifs, line)) { cout << "Save file malformed (hair)\n"; return; }
+    player->setHair(line);
+
+    // eyes
+    if (!getline(ifs, line)) { cout << "Save file malformed (eyes)\n"; return; }
+    player->setEyes(line);
+
+    // inventory
+    if (!getline(ifs, line)) { cout << "Save file malformed (inventory)\n"; return; }
+    array<Item,5> inv;
+    // parse comma-separated names
+    vector<string> parts;
+    stringstream ss(line);
+    string itemname;
+    while (getline(ss, itemname, ',')) {
+        parts.push_back(itemname);
+    }
+    // fill inventory items
+    for (size_t i = 0; i < 5; ++i) {
+        string nm = (i < parts.size()) ? parts[i] : string();
+        if (nm.empty()) {
+            inv[i] = Item();
+        } else {
+            // best-effort item type mapping
+            ItemType t = ItemType::MISC;
+            if (nm == "mirror") t = ItemType::MIRROR;
+            else if (nm == "bandage" || nm == "bandaids") t = ItemType::BANDAGE;
+            else if (nm == "cookie" || nm == "snack bar" || nm == "syrup") t = ItemType::FOOD;
+            inv[i] = Item(nm, t, (t==ItemType::FOOD?2: (t==ItemType::BANDAGE?5:0))); 
+        }
+    }
+    player->setInventory(inv);
+
+    // health
+    if (!getline(ifs, line)) { cout << "Save file malformed (health)\n"; return; }
+    int savedHealth = 0;
+    try { savedHealth = stoi(line); } catch(...) { savedHealth = player->getCurrentHealth(); }
+
+    // Adjust player's health to match saved value
+    int current = player->getCurrentHealth();
+    if (savedHealth < current) {
+        player->takeDamage(current - savedHealth);
+    } else if (savedHealth > current) {
+        player->heal(savedHealth - current);
+    }
+
+    ifs.close();
+    cout << "Loaded game from " << path << endl;
+}
 /*void loadSave() {
     cout << "loadSave() called" << endl;
 
