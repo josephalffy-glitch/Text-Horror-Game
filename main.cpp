@@ -71,11 +71,11 @@ int main(int, char**)
     static char nameBuffer[128] = "";
     static char hairBuffer[64] = "";
     static char eyesBuffer[64] = "";
-    static char saveFileBuffer[64] = "";
+    //static char saveFileBuffer[64] = "";
     static bool playerCreated = false;
     static bool titleScreenDone = false;
-    static bool saveClicked = false;
-    static bool quitClicked = false;
+    //static bool saveClicked = false;
+    static bool showQuitWindow = false;
     static bool showLoadWindow = false;
     static bool showSaveWindow = false;
     
@@ -123,7 +123,7 @@ int main(int, char**)
             float posX2 = (windowWidth - buttonWidth2) * 0.5f;
             ImGui::SetCursorPosX(posX2);
             // Allow entering a save filename, or open the load window
-            InputText("Save File", saveFileBuffer, IM_ARRAYSIZE(saveFileBuffer));
+            //InputText("Save File", saveFileBuffer, IM_ARRAYSIZE(saveFileBuffer));
             if(Button("Load Game"))
             {
                 // Open the dedicated Load Game window where the user can pick a file
@@ -452,12 +452,29 @@ int main(int, char**)
         SameLine();
         if(Button("Quit"))
         {
-            quitClicked = true;
-
+            showQuitWindow = true;
         }
 
+                
+        if(showQuitWindow)
+        {
+            Begin("Quit");
+            TextUnformatted("Quit Game? (Make sure you have saved!");
 
+            if (Button("Yes"))
+            {
+                titleScreenDone = false;
+                showQuitWindow = false;
+            }
+            
+            if(Button("No"))
+            {
+                showQuitWindow = false;
+            }
+            End();
+        }
         End(); // Scene
+
 
         // Player Window
         Begin("Player", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_AlwaysAutoResize); 
