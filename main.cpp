@@ -8,6 +8,7 @@
 #include <sstream>
 #include <iostream>
 #include "player.h"
+#include "Room.h"
 #include "GameEngine.h"
 #include "Items.h"
 #include "PowerMeterMinigame.h"
@@ -16,13 +17,6 @@ using namespace ImGui;
 
 // Forward declare GLFW error callback
 static void glfw_error_callback(int error, const char* description);
-
-// Room enum
-enum Rooms {
-    ROOM_BEDROOM,
-    ROOM_KITCHEN,
-    ROOM_LIVING,
-};
 
 int main(int, char**)
 {
@@ -54,10 +48,12 @@ int main(int, char**)
     Player& player = *playerPtr;
     player.takeDamage(1); //starts the player with one health down
 
-    Rooms currentRoom = ROOM_BEDROOM;
-    //BedroomChoice bdrChoice = BedroomChoice_Default;
+    // Initialize room tracking after GameEngine is fully constructed
+    gameEngine.visitRoom("Bedroom");
+    Room* currentRoomPtr = gameEngine.getCurrentRoom();
+	RoomEnum currentRoomEnum = currentRoomPtr->getRoomEnum();
+    string currentRoomName = (currentRoomPtr != nullptr) ? currentRoomPtr->getName() : "Bedroom";
     static bool showStorageWindow = false;
-    static string currentRoomName = "";
     static string currentStorageLocation = "";
 
     // Message log for GUI
@@ -174,9 +170,13 @@ int main(int, char**)
 //-------------------Main Scene Window---------------------------
         Begin("Scene", nullptr, ImGuiWindowFlags_NoCollapse);
 
-        switch (currentRoom)
+		currentRoomPtr = gameEngine.getCurrentRoom();
+		currentRoomEnum = currentRoomPtr->getRoomEnum();
+		currentRoomName = (currentRoomPtr != nullptr) ? currentRoomPtr->getName() : "Unknown";
+
+		switch (currentRoomEnum)
         {
-            case ROOM_BEDROOM:
+			case RoomEnum::ROOM_BEDROOM:
             {
                 TextWrapped("You are in your bedroom. It is a simple room with a bed and a nightstand.\nOn top of the nightstand is a trophy.");
                 currentArt = gameEngine.printArt("Bedroom");
@@ -197,7 +197,6 @@ int main(int, char**)
                 if (!checkedDrawer && !mirrorScene && Button("Look in the drawer")) 
                 {
                     currentStorageLocation = "Drawer";
-                    currentRoomName = "Bedroom";
                     gameEngine.lookInStorageLocation(currentRoomName, currentStorageLocation, showStorageWindow, message_log);
                     checkedDrawer = true;
                 }
@@ -236,12 +235,13 @@ int main(int, char**)
                 {
                     push_log("\n>> Mom: Sweetie! Breakfeast is ready!\n");
                     push_log("She has always called you that. It's a little embarrassing, but mostly endearing\n");
-                    currentRoom = ROOM_KITCHEN;
+                    gameEngine.visitRoom("Kitchen");
+
                 }
                 break;
             }
 
-            case ROOM_KITCHEN:
+			case RoomEnum::ROOM_KITCHEN:
             {
                 TextWrapped("You run to the kitchen, ready for a fresh meal.\nYour mom turns around with a plate of waffles drenched in syrup.\nAs she sets the plate down, you notice her right hand is bandaged up.");
                 currentArt = gameEngine.printArt("Kitchen");
@@ -269,7 +269,6 @@ int main(int, char**)
                 if (!checkedCabinet && Button("Search Kitchen Cabinet")) 
                 {
                     currentStorageLocation = "Cabinet";
-                    currentRoomName = "Kitchen";
                     gameEngine.lookInStorageLocation(currentRoomName, currentStorageLocation, showStorageWindow, message_log);
                     checkedCabinet = true; 
                     push_log("You open the kitchen cabinet. You can take a look inside the new window.");
@@ -351,13 +350,13 @@ int main(int, char**)
                 // move to living room only when minigame is completed and closed
                 if (powerOutageTriggered && !powerGameActive && !powerGameFinished) 
                 {
-                    currentRoom = ROOM_LIVING;
+                    gameEngine.visitRoom("Living Room");
                     push_log("You finish breakfast and get ready for the day. Moving to Living Room...");
                 }
                 break;
             }
 
-            case ROOM_LIVING:
+			case RoomEnum::ROOM_LIVING:
             {
                 TextWrapped("You are in the living room. A large, blank TV sits on a stand.");
                 currentArt = gameEngine.printArt("Bedroom"); // Use a neutral background art
@@ -498,7 +497,9 @@ int main(int, char**)
 
         // Render the Storage Location (Drawer/Cabinet) window if triggered
         if (showStorageWindow) {
-            gameEngine.renderStorageLocationWindow(currentRoomName, currentStorageLocation, showStorageWindow, message_log);
+            Room* currentRoomPtr = gameEngine.getCurrentRoom();
+            string roomName = (currentRoomPtr != nullptr) ? currentRoomPtr->getName() : "Bedroom";
+            gameEngine.renderStorageLocationWindow(roomName, currentStorageLocation, showStorageWindow, message_log);
         }
 
 

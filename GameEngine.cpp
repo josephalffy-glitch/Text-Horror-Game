@@ -29,6 +29,8 @@ GameEngine::GameEngine()
     // Initialize player and rooms
     player = new Player();
     rooms = new vector<Room>();
+    currentRoom = nullptr;
+    visitedRooms = new vector<Room>();
 
     // Initialize game items
     // (Bedroom items)
@@ -48,6 +50,7 @@ GameEngine::GameEngine()
     Room bedroom = Room(); // create bedroom
     bedroom.setName("Bedroom");
     bedroom.setDescription("Your cozy bedroom filled with familiar items.");
+	bedroom.setRoomEnum(RoomEnum::ROOM_BEDROOM);
     bedroom.addStorageLocation("Drawer");
     bedroom.addItemToLocation("Drawer", *mirror);
     bedroom.addItemToLocation("Drawer", *pencil);
@@ -59,12 +62,23 @@ GameEngine::GameEngine()
     Room kitchen = Room(); // create kitchen
     kitchen.setName("Kitchen");
     kitchen.setDescription("The heart of the home, bustling with activity.");
+	kitchen.setRoomEnum(RoomEnum::ROOM_KITCHEN);
     kitchen.addStorageLocation("Cabinet");
     kitchen.addItemToLocation("Cabinet", *cornstarch);
     kitchen.addItemToLocation("Cabinet", *syrup);
     kitchen.addItemToLocation("Cabinet", *salt);
     kitchen.addItemToLocation("Cabinet", *cookie);
     rooms->push_back(kitchen); // add kitchen to rooms vector
+	// (Living Room)
+	Room livingRoom = Room(); // create living room
+    livingRoom.setName("Living Room");
+    livingRoom.setDescription("A comfortable living space with a couch and a TV.");
+	livingRoom.setRoomEnum(RoomEnum::ROOM_LIVING);
+    livingRoom.addStorageLocation("Shelf");
+    // Add items to living room shelf if needed
+    rooms->push_back(livingRoom); // add living room to rooms vector
+
+	//visitRoom("Bedroom"); // start in bedroom
 }
 
 // Singleton instance
@@ -319,6 +333,27 @@ string GameEngine::printArt(const string& image)
     file.close();
     return art.str();
 }
+
+void GameEngine::visitRoom(const string& roomName) {
+	for (Room& room : *rooms) {
+		if (room.getName() == roomName) {
+			currentRoom = &room;
+			if (!room.isVisited()) {
+				room.setVisited(true);
+				visitedRooms->push_back(room);
+			}
+			return;
+		}
+	}
+}
+
+Room* GameEngine::getCurrentRoom() {
+	if (currentRoom != nullptr) {
+		return currentRoom;
+	}
+	return nullptr; // return nullptr if currentRoom is null
+}
+
 /*void loadSave() {
     cout << "loadSave() called" << endl;
 

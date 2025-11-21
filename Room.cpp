@@ -4,18 +4,20 @@ using namespace std;
 
 // default constructor
 Room::Room() {
-    name = "unknown";
-    description = "unknown";
+    name = "";
+    description = "";
     storageLocations = {};
     visited = false;
+	roomEnum = RoomEnum::NULL_ROOM;
 }
 
 // parameterized constructor
-Room::Room(string name, string description, vector<StorageLocation> storageLocations, bool visited) {
+Room::Room(string name, string description, vector<StorageLocation> storageLocations, bool visited ,RoomEnum roomEnum) {
     this->name = name;
     this->description = description;
     this->storageLocations = storageLocations;
     this->visited = visited;
+	this->roomEnum = roomEnum;
 }
 
 // getters
@@ -25,6 +27,10 @@ string Room::getName() {
 
 string Room::getDescription() {
     return description;
+}
+
+RoomEnum Room::getRoomEnum() {
+	return roomEnum;
 }
 
 vector<StorageLocation> Room::getStorageLocations() {
@@ -51,6 +57,10 @@ void Room::setName(string name) {
 
 void Room::setDescription(string description) {
     this->description = description;
+}
+
+void Room::setRoomEnum(RoomEnum roomEnum) {
+	this->roomEnum = roomEnum;
 }
 
 void Room::addStorageLocation(string locationName) {

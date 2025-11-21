@@ -7,6 +7,15 @@
 
 using namespace std;
 
+
+enum class RoomEnum {
+	ROOM_BEDROOM,
+	ROOM_KITCHEN,
+	ROOM_LIVING,
+	NULL_ROOM
+};
+
+
 struct StorageLocation {
     string name;
     vector<Item> items;
@@ -18,20 +27,23 @@ class Room {
         string description;
         vector<StorageLocation> storageLocations;
         bool visited;
+		RoomEnum roomEnum;
 
     public:
         // constructors
         Room();
-        Room(string name, string description, vector<StorageLocation> storageLocations, bool visited);
+        Room(string name, string description, vector<StorageLocation> storageLocations, bool visited,RoomEnum roomEnum);
         // getters
         string getName();
         string getDescription();
+		RoomEnum getRoomEnum();
         vector<StorageLocation> getStorageLocations();
         vector<Item> getItemsInLocation(string locationName);
         bool isVisited();
         // setters
         void setName(string name);
         void setDescription(string description);
+		void setRoomEnum(RoomEnum roomEnum);
         void addStorageLocation(string locationName);
         void addItemToLocation(string locationName, Item item);
         void removeItemFromLocation(string locationName, Item item);
