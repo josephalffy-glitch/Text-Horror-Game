@@ -11,6 +11,7 @@
 #include "GameEngine.h"
 #include "Items.h"
 #include "PowerMeterMinigame.h"
+#include "loadgame.h"
 
 using namespace ImGui;
 
@@ -79,6 +80,8 @@ int main(int, char**)
     static bool titleScreenDone = false;
     static bool saveClicked = false;
     static bool quitClicked = false;
+    static bool showLoadWindow = false;
+    static bool showSaveWindow = false;
     
     // Power Meter Minigame state
     bool powerGameActive = false; 
@@ -123,12 +126,19 @@ int main(int, char**)
             float buttonWidth2 = ImGui::CalcTextSize("Load Game").x + ImGui::GetStyle().FramePadding.x * 2;
             float posX2 = (windowWidth - buttonWidth2) * 0.5f;
             ImGui::SetCursorPosX(posX2);
+            // Allow entering a save filename, or open the load window
+            InputText("Save File", saveFileBuffer, IM_ARRAYSIZE(saveFileBuffer));
             if(Button("Load Game"))
             {
-                // gameEngine.loadGame("save.txt");
-                push_log("Load Game not yet implemented.");
+                // Open the dedicated Load Game window where the user can pick a file
+                showLoadWindow = true;
             }
             End();
+
+            // If Load window was requested from title screen, render it here
+            if (showLoadWindow) {
+                renderLoadGameWindow(showLoadWindow, gameEngine, message_log);
+            }
 
             Render();
             int display_w, display_h;
@@ -436,9 +446,8 @@ int main(int, char**)
 //---------------saving and quiting buttons----------------
         if(Button("Save"))
         {
-            saveClicked = true;
-            // gameEngine.saveGame("");
-            push_log("Saving not yet implemented.");
+            // open save slot chooser (three fixed slots)
+            showSaveWindow = true;
         }
 
         SameLine();
@@ -504,6 +513,14 @@ int main(int, char**)
 
         End();
 
+
+        // Render load/save windows if requested
+        if (showLoadWindow) {
+            renderLoadGameWindow(showLoadWindow, gameEngine, message_log);
+        }
+        if (showSaveWindow) {
+            renderSaveGameWindow(showSaveWindow, gameEngine, message_log);
+        }
 
         //Rendering
         Render();
