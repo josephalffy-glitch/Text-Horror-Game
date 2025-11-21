@@ -41,8 +41,12 @@ class GameEngine {
         //ASCII Generation
         string printArt(const string& image);
 
+		// Getters
+		Player* getPlayer();
+		Room* getCurrentRoom();
+		vector<Room>* getVisitedRooms();
+
         // Game Loop
-        Player* getPlayer();
         void useItem(const string& itemName, std::string& message_log);
         bool checkForItemInLocation(const string& roomName, const string& locationName, const string& item);
         bool pickUpItem(const string& roomName, const string& locationName, const string itemName);
@@ -50,7 +54,7 @@ class GameEngine {
         void lookInStorageLocation(const string& roomName, const string& locationName, bool& showStorageWindow, std::string& message_log);
         void renderStorageLocationWindow(const string& roomName, const string& locationName, bool& showStorageWindow, std::string& message_log);
 		void visitRoom(const string& roomName);
-		Room* getCurrentRoom();
+
 };
 
 

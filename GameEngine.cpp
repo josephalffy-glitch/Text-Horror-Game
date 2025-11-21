@@ -94,6 +94,10 @@ Player* GameEngine::getPlayer()
     return player;
 }
 
+vector<Room>* GameEngine::getVisitedRooms() {
+	return visitedRooms;
+}
+
 void GameEngine::useItem(const string& itemName, std::string& message_log){
     auto push_log = [&](const std::string& s) 
     {
