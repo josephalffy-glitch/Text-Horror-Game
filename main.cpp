@@ -530,6 +530,25 @@ int main(int, char**)
 
 
         End();
+//----------------Visited Rooms Window-------------------------
+        SetNextWindowSize(ImVec2(150, 200), ImGuiCond_Always);
+        Begin("Visited Rooms", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_AlwaysAutoResize);
+         vector<Room>* visitedRooms = gameEngine.getVisitedRooms(); //gets vector with all visited rooms
+         for(Room& room : *visitedRooms) //runs through all visited room objects
+         {
+            //Room* current = gameEngine.getCurrentRoom();
+            Text("%s", room.getName().c_str());
+            
+
+            SameLine();
+            string btn = "Visit##" + room.getName();
+            if(Button(btn.c_str()))
+            {
+                gameEngine.visitRoom(room.getName());
+            }
+         }
+
+        End();
 
 
         // Render load/save windows if requested
