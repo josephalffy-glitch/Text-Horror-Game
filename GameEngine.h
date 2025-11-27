@@ -24,6 +24,7 @@ class GameEngine {
         vector<Room>* rooms; // Pointer to a vector of Room objects
 		Room* currentRoom; // Pointer to the current room the player is in
 		vector<Room>* visitedRooms; // Pointer to a vector of visited rooms
+        bool justLoaded; // flag set when a load operation completed
 
         // Private constructor
         GameEngine();
@@ -54,6 +55,10 @@ class GameEngine {
         void lookInStorageLocation(const string& roomName, const string& locationName, bool& showStorageWindow, std::string& message_log);
         void renderStorageLocationWindow(const string& roomName, const string& locationName, bool& showStorageWindow, std::string& message_log);
 		void visitRoom(const string& roomName);
+        // load flag helpers
+        void markJustLoaded();
+        bool wasJustLoaded() const;
+        void clearJustLoaded();
 
 };
 
