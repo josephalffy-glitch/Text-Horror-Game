@@ -78,6 +78,9 @@ int main(int, char**)
     static bool showQuitWindow = false;
     static bool showLoadWindow = false;
     static bool showSaveWindow = false;
+    static bool movedToKitchen = false;
+    static bool movedToLivingRoom = false;
+
     
     // Power Meter Minigame state
     bool powerGameActive = false; 
@@ -241,11 +244,12 @@ int main(int, char**)
 
 
                 // move to kitchen scene
-                if (rested && checkedDrawer && checkedTrophy) 
+                if (rested && checkedDrawer && checkedTrophy && !movedToKitchen) 
                 {
                     push_log("\n>> Mom: Sweetie! Breakfeast is ready!\n");
                     push_log("She has always called you that. It's a little embarrassing, but mostly endearing\n");
                     gameEngine.visitRoom("Kitchen");
+                    movedToKitchen = true;
 
                 }
                 break;
@@ -330,7 +334,7 @@ int main(int, char**)
                     {
                         powerGameFinished = true;
                         powerGameWin = powerGame.checkWinCondition(powerGame.cursorPosition);
-                        canTravel = true;
+                        
                     }
 
                     End();
@@ -353,6 +357,7 @@ int main(int, char**)
                     {
                         powerGameFinished = false;
                         powerGameActive = false;
+                        canTravel = true;
                     }
                     End();
                 }
@@ -360,10 +365,11 @@ int main(int, char**)
 
 
                 // move to living room only when minigame is completed and closed
-                if (powerOutageTriggered && !powerGameActive && !powerGameFinished) 
+                if (powerOutageTriggered && !powerGameActive && !powerGameFinished && !movedToLivingRoom) 
                 {
                     gameEngine.visitRoom("Living Room");
                     push_log("You finish breakfast and get ready for the day. Moving to Living Room...");
+                    movedToLivingRoom = true;
                 }
                 break;
             }
