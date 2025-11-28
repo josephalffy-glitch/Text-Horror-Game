@@ -545,9 +545,17 @@ int main(int, char**)
             SameLine();
             string btn = "Visit##" + room.getName(); //creates unique button ids
             
-            if(Button(btn.c_str()) && canTravel)
+            if(Button(btn.c_str()))
             {
-                gameEngine.visitRoom(room.getName());
+                if(canTravel)
+                {
+                    gameEngine.visitRoom(room.getName());
+                }
+                else
+                {
+                    push_log("This seems important . . . I should stay here.");
+                }
+                
             }
          }
 
