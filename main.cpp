@@ -71,10 +71,10 @@ int main(int, char**)
     static char nameBuffer[128] = "";
     static char hairBuffer[64] = "";
     static char eyesBuffer[64] = "";
-    //static char saveFileBuffer[64] = "";
+    static bool canTravel = true;
     static bool playerCreated = false;
     static bool titleScreenDone = false;
-    //static bool saveClicked = false;
+    static bool visiting = false;
     static bool showQuitWindow = false;
     static bool showLoadWindow = false;
     static bool showSaveWindow = false;
@@ -297,6 +297,7 @@ int main(int, char**)
                     
                     powerGameActive = true;
                     powerOutageTriggered = true; // Set to true so this only triggers once
+                    canTravel = false; //cant visit other rooms
                 }
 
                 // The minigame display window (uses the existing structure)
@@ -329,6 +330,7 @@ int main(int, char**)
                     {
                         powerGameFinished = true;
                         powerGameWin = powerGame.checkWinCondition(powerGame.cursorPosition);
+                        canTravel = true;
                     }
 
                     End();
@@ -399,6 +401,7 @@ int main(int, char**)
                         push_log("\nThe word on the screen burns into your mind. You instinctively reach for your pocket mirror.");
                         if (Button("Look in Pocket Mirror")) 
                         {
+                            canTravel = false; //cant travel during this scene
                             push_log("\nAs you raise the small mirror to your face, your reflection is not your own. It's a mangled, smiling figure with your mother's bandaged hand covering its mouth.");
                             currentArt = gameEngine.printArt("BrokenMirror"); // Final spooky image
                             push_log("\n**END OF DAY 1: A FAMILIAR FACE**");
@@ -410,6 +413,7 @@ int main(int, char**)
                         push_log("\nWith the TV message burning in your mind, you feel a cold, unsettling presence behind you.");
                         if (Button("Turn Around")) 
                         {
+                            canTravel = false; //cant travel during this scene
                             push_log("\nIt's your mother, but her eyes are wide and black. She whispers: 'You shouldn't have fixed the power.'");
                             push_log("The door slams shut, plunging you into darkness.");
                             push_log("\n**END OF DAY 1: MOM'S SECRET**");
@@ -495,7 +499,7 @@ int main(int, char**)
             if (inv[i].getType() != ItemType::NULLITEM) 
             {
                 SameLine();
-                std::string btnLabel = "Use##" + std::to_string(i);
+                std::string btnLabel = "Use##" + std::to_string(i); //creates unique button id
                 if (Button(btnLabel.c_str())) 
                 {
                     gameEngine.useItem(inv[i].getName(), message_log);
@@ -533,16 +537,15 @@ int main(int, char**)
 //----------------Visited Rooms Window-------------------------
         SetNextWindowSize(ImVec2(150, 200), ImGuiCond_Always);
         Begin("Visited Rooms", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_AlwaysAutoResize);
+
          vector<Room>* visitedRooms = gameEngine.getVisitedRooms(); //gets vector with all visited rooms
          for(Room& room : *visitedRooms) //runs through all visited room objects
          {
-            //Room* current = gameEngine.getCurrentRoom();
             Text("%s", room.getName().c_str());
-            
-
             SameLine();
-            string btn = "Visit##" + room.getName();
-            if(Button(btn.c_str()))
+            string btn = "Visit##" + room.getName(); //creates unique button ids
+            
+            if(Button(btn.c_str()) && canTravel)
             {
                 gameEngine.visitRoom(room.getName());
             }
