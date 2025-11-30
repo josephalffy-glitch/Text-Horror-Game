@@ -74,7 +74,6 @@ int main(int, char**)
     static bool canTravel = true;
     static bool playerCreated = false;
     static bool titleScreenDone = false;
-    static bool visiting = false;
     static bool showQuitWindow = false;
     static bool showLoadWindow = false;
     static bool showSaveWindow = false;
@@ -125,8 +124,6 @@ int main(int, char**)
             float buttonWidth2 = ImGui::CalcTextSize("Load Game").x + ImGui::GetStyle().FramePadding.x * 2;
             float posX2 = (windowWidth - buttonWidth2) * 0.5f;
             ImGui::SetCursorPosX(posX2);
-            // Allow entering a save filename, or open the load window
-            //InputText("Save File", saveFileBuffer, IM_ARRAYSIZE(saveFileBuffer));
             if(Button("Load Game"))
             {
                 // Open the dedicated Load Game window where the user can pick a file
@@ -213,28 +210,7 @@ int main(int, char**)
                     gameEngine.lookInStorageLocation(currentRoomName, currentStorageLocation, showStorageWindow, message_log);
                     checkedDrawer = true;
                 }
-                
-                // We're skipping the old Yes/No prompt here (the original `mirrorScene` logic)
-                // because the new Storage Location window (renderStorageLocationWindow) handles item picking up directly.
-                /*
-                if (mirrorScene) 
-                {
-                    if (Button("Yes")) 
-                    {
-                        push_log("\nYou open the mirror and see your " + player.getEyes() + " eyes staring back at you.\nYou decide to hold on to the mirror.\nIt could come in handy.\n");
-                        gameEngine.pickUpItem("Bedroom", "Drawer", "mirror");
-                        //itemWindow = true;
-                        mirrorScene = false;
-                        checkedDrawer = true;
-                    }
-                    if (Button("No")) 
-                    {
-                        push_log("You decide to ignore the mirror and close the drawer.");
-                        mirrorScene = false;
-                        checkedDrawer = true;
-                    }
-                }
-                */
+            
 
                 if (!checkedTrophy && Button("Check out the trophy")) 
                 {
