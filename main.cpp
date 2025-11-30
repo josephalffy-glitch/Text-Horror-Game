@@ -364,7 +364,11 @@ int main(int, char**)
                     else 
                     {
                         // health penalty added here
-                        player.takeDamage(1); 
+                        if(!TakePowerDamage)
+                        {
+                            player.takeDamage(2);
+                            TakePowerDamage = true;
+                        }
                         Text("FAILURE! A power surge zaps you.");
                         push_log("\nOH NO! A surge hit the box, and you took damage! Maybe be more careful next time!\n");
                         push_log("\n>> Mom: Well, the lights are back on, but it seem unstable.\n");
