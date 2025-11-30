@@ -5,6 +5,7 @@
 #include "glfw/include/GLFW/glfw3.h"
 #include <string>
 #include <vector>
+#include <array>
 #include <sstream>
 #include <iostream>
 #include "player.h"
@@ -53,12 +54,12 @@ int main(int, char**)
     gameEngine.visitRoom("Bedroom");
     Room* currentRoomPtr = gameEngine.getCurrentRoom();
 	RoomEnum currentRoomEnum = currentRoomPtr->getRoomEnum();
-    string currentRoomName = (currentRoomPtr != nullptr) ? currentRoomPtr->getName() : "Bedroom";
+    std::string currentRoomName = (currentRoomPtr != nullptr) ? currentRoomPtr->getName() : "Bedroom";
     static bool showStorageWindow = false;
-    static string currentStorageLocation = "";
+    static std::string currentStorageLocation = "";
 
     // Message log for GUI
-    std::string message_log;
+    std::string message_log;    
     auto push_log = [&](const std::string& s) 
     {
         message_log += s + "\n";
@@ -87,6 +88,7 @@ int main(int, char**)
     static bool powerGameFinished = false;
     static bool powerGameWin = false;
     static bool powerOutageTriggered = false; // New tracker for the story
+    static bool TakePowerDamage = false;
 
     //Main loop
     while (!glfwWindowShouldClose(window))
@@ -95,6 +97,40 @@ int main(int, char**)
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         NewFrame();
+        // check if player is dead (new logic)
+        if (player.getCurrentHealth() == 0) 
+        {
+            Begin("Game Over", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
+            TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "YOU DIED.");
+            Text("Seems like you ran out of health.");
+            Text("Maybe use a bandage next time?");
+            
+            if (Button("Restart")) 
+            {
+                // reset everything
+                player.heal(100); // full heal
+                powerOutageTriggered = false;
+                powerGameFinished = false;
+                canTravel = true;
+                movedToKitchen = false;
+                movedToLivingRoom = false;
+                gameEngine.visitRoom("Bedroom");
+                push_log("\nyou woke up again. was it all a dream?");
+            }
+            End();
+
+            // render the death screen and skip the rest
+            Render();
+            int display_w, display_h;
+            glfwGetFramebufferSize(window, &display_w, &display_h);
+            glViewport(0, 0, display_w, display_h);
+            glClearColor(0.0f, 0.0f, 0.0f, 1.00f); // black screen for death
+            glClear(GL_COLOR_BUFFER_BIT);
+            ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+            glfwSwapBuffers(window);
+            continue;
+        }
+
         //Title screen
         if(!titleScreenDone) 
         {
@@ -324,10 +360,15 @@ int main(int, char**)
                     {
                         Text("Success! The power is back.");
                         push_log("\n>> Mom: That's my kid! The lights are back on. Thanks, sweetie!\n");
-                    } else 
+                    } 
+                    else 
                     {
-                        Text("Oh no, I missed it. The lights flicker back on but seem unstable.");
-                        push_log("\n>> Mom: Well, the lights are back on, but that was a bit rough. Maybe be more careful next time!\n");
+                        // health penalty added here
+                        player.takeDamage(1); 
+                        Text("FAILURE! A power surge zaps you.");
+                        push_log("\nOH NO! A surge hit the box, and you took damage! Maybe be more careful next time!\n");
+                        push_log("\n>> Mom: Well, the lights are back on, but it seem unstable.\n");
+
                     }
                     if (Button("Close")) 
                     {
@@ -352,7 +393,7 @@ int main(int, char**)
 
 			case RoomEnum::ROOM_LIVING:
             {
-                TextWrapped("You are in the living room. A large, blank TV sits on a stand.");
+                TextWrapped("You are in the living room. A large, blank TV sits on a stand, emitting a faint, high-pitched whine.");
                 currentArt = gameEngine.printArt("Bedroom"); // Use a neutral background art
 
                 static bool inspectedTV = false;
@@ -360,59 +401,69 @@ int main(int, char**)
 
                 if (!inspectedTV && Button("Inspect TV")) 
                 {
-                    push_log("You walk up to the TV. The screen flickers with static before a single word appears: 'WATCH'.");
+                    push_log("You walk up to the TV. The screen explodes into blinding white static. A voice cuts through: 'RUN'.");
                     currentArt = gameEngine.printArt("BrokenMirror"); // Creepy static flash
                     inspectedTV = true;
                 }
 
-                // Horror Ending Logic
+                // branching horror ending
                 if (inspectedTV && !endingTriggered) 
                 {
-                    // Check if player has the Pocket Mirror item
+                    TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f),
+                        "The atmosphere turns heavy. Panic sets in. What do you do?");
+                    
+                    // check if player has the pocket mirror item
                     std::array<Item, 5> inv = player.getInventory();
                     bool hasPocketMirror = false;
-                    for (const auto& item : inv) {
-                        if (item.getName() == "mirror") {
+                    for (const auto& item : inv) 
+                    {
+                        if (item.getName() == "mirror") 
+                        {
                             hasPocketMirror = true;
                             break;
                         }
                     }
 
+                    // option 1: the mirror (requires mirror)
                     if (hasPocketMirror) 
                     {
-                        push_log("\nThe word on the screen burns into your mind. You instinctively reach for your pocket mirror.");
-                        if (Button("Look in Pocket Mirror")) 
+                        if (Button("Check Reflection (Use Mirror)")) 
                         {
-                            canTravel = false; //cant travel during this scene
-                            push_log("\nAs you raise the small mirror to your face, your reflection is not your own. It's a mangled, smiling figure with your mother's bandaged hand covering its mouth.");
-                            currentArt = gameEngine.printArt("BrokenMirror"); // Final spooky image
-                            push_log("\n**END OF DAY 1: A FAMILIAR FACE**");
+                            canTravel = false;
+                            push_log("\nYou raise the mirror. The reflection shows the room is empty... but there is a hand on your shoulder.");
+                            push_log("You look down. The hand is bandaged. The grip tightens.");
+                            currentArt = gameEngine.printArt("BrokenMirror"); 
+                            push_log("\n**END OF DAY 1: THE INVISIBLE TOUCH**");
                             endingTriggered = true;
                         }
                     } 
-                    else 
+
+                    // option 2: the escape 
+                    if (Button("Bolt for the Front Door")) 
                     {
-                        push_log("\nWith the TV message burning in your mind, you feel a cold, unsettling presence behind you.");
-                        if (Button("Turn Around")) 
-                        {
-                            canTravel = false; //cant travel during this scene
-                            push_log("\nIt's your mother, but her eyes are wide and black. She whispers: 'You shouldn't have fixed the power.'");
-                            push_log("The door slams shut, plunging you into darkness.");
-                            push_log("\n**END OF DAY 1: MOM'S SECRET**");
-                            endingTriggered = true;
-                        }
+                        canTravel = false;
+                        push_log("\nYou sprint to the door and grab the handle. It's scorching hot!");
+                        push_log("You recoil. The locks begin to turn from the *outside*. Someone is coming in.");
+                        push_log("\n**END OF DAY 1: NO ESCAPE**");
+                        endingTriggered = true;
+                    }
+
+                    // option 3: the cry for help 
+                    if (Button("Scream for Mom")) 
+                    {
+                        canTravel = false;
+                        push_log("\n'MOM! HELP!' you scream.");
+                        push_log("The static stops instantly. A whisper comes from the dark hallway behind you.");
+                        push_log(">> Mom: 'I told you... never to raise your voice in this house.'");
+                        push_log("\n**END OF DAY 1: DISCIPLINE**");
+                        endingTriggered = true;
                     }
                 }
 
-                // Final message
-                if (endingTriggered) 
-                {
-                    Separator();
-                    TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "DAY 1 HAS CONCLUDED. TO BE CONTINUED...");
-                }
                 break;
+
             }
-        }
+        }   
 
         // Display ASCII Art
         if (!currentArt.empty()) 
@@ -508,7 +559,8 @@ int main(int, char**)
         }
 
         // Render the Storage Location (Drawer/Cabinet) window if triggered
-        if (showStorageWindow) {
+        if (showStorageWindow) 
+        {
             Room* currentRoomPtr = gameEngine.getCurrentRoom();
             string roomName = (currentRoomPtr != nullptr) ? currentRoomPtr->getName() : "Bedroom";
             gameEngine.renderStorageLocationWindow(roomName, currentStorageLocation, showStorageWindow, message_log);
@@ -545,10 +597,12 @@ int main(int, char**)
 
 
         // Render load/save windows if requested
-        if (showLoadWindow) {
+        if (showLoadWindow) 
+        {
             renderLoadGameWindow(showLoadWindow, gameEngine, message_log);
         }
-        if (showSaveWindow) {
+        if (showSaveWindow) 
+        {
             renderSaveGameWindow(showSaveWindow, gameEngine, message_log);
         }
 
@@ -577,3 +631,4 @@ static void glfw_error_callback(int error, const char* description)
 {
     fprintf(stderr, "Glfw Error %d: %s\n", error, description);
 }
+
