@@ -11,6 +11,7 @@
 #include "GameEngine.h"
 #include "Items.h"
 #include "PowerMeterMinigame.h"
+#include "loadgame.h" 
 
 using namespace ImGui;
 
@@ -96,7 +97,7 @@ int main(int, char**)
         ImGui_ImplGlfw_NewFrame();
         NewFrame();
 
-        // check if player is dead (new logic)
+        // check if player is dead
         if (player.getCurrentHealth() <= 0) 
         {
             Begin("game over", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
@@ -156,10 +157,13 @@ int main(int, char**)
             float buttonWidth2 = ImGui::CalcTextSize("Load Game").x + ImGui::GetStyle().FramePadding.x * 2;
             float posX2 = (windowWidth - buttonWidth2) * 0.5f;
             ImGui::SetCursorPosX(posX2);
+            
             if(Button("Load Game"))
             {
-                // gameEngine.loadGame("save.txt");
-                push_log("Load Game not yet implemented.");
+                gameEngine.loadGame("save.txt");
+                titleScreenDone = true;
+                playerCreated = true;
+                push_log("Game loaded!");
             }
             End();
 
@@ -234,35 +238,12 @@ int main(int, char**)
                     gameEngine.lookInStorageLocation(currentRoomName, currentStorageLocation, showStorageWindow, message_log);
                     checkedDrawer = true;
                 }
-                
-                // We're skipping the old Yes/No prompt here (the original `mirrorScene` logic)
-                // because the new Storage Location window (renderStorageLocationWindow) handles item picking up directly.
-                /*
-                if (mirrorScene) 
-                {
-                    if (Button("Yes")) 
-                    {
-                        push_log("\nYou open the mirror and see your " + player.getEyes() + " eyes staring back at you.\nYou decide to hold on to the mirror.\nIt could come in handy.\n");
-                        gameEngine.pickUpItem("Bedroom", "Drawer", "mirror");
-                        //itemWindow = true;
-                        mirrorScene = false;
-                        checkedDrawer = true;
-                    }
-                    if (Button("No")) 
-                    {
-                        push_log("You decide to ignore the mirror and close the drawer.");
-                        mirrorScene = false;
-                        checkedDrawer = true;
-                    }
-                }
-                */
 
                 if (!checkedTrophy && Button("Check out the trophy")) 
                 {
                     push_log("The trophy is shiny and reminds you of your victories. " + player.getName() + " is printed on it.");
                     checkedTrophy = true;
                 }
-
 
                 // move to kitchen scene
                 if (rested && checkedDrawer && checkedTrophy) 
@@ -290,7 +271,7 @@ int main(int, char**)
 
                 if (!ateBreakfast && Button("Eat breakfast")) 
                 {
-                    player.heal(1); // Assuming breakfast heals slightly, like the old logic
+                    player.heal(1); // Assuming breakfast heals slightly
                     push_log("You ate breakfast. (health updated)");
                     ateBreakfast = true;
                 }
@@ -302,7 +283,7 @@ int main(int, char**)
                     askedAboutHand = true;
                 }
 
-                // logic to open the cabinet storage
+                // open the cabinet storage
                 if (!checkedCabinet && Button("Search Kitchen Cabinet")) 
                 {
                     currentStorageLocation = "Cabinet";
@@ -327,7 +308,7 @@ int main(int, char**)
                     powerOutageTriggered = true; // set to true so this only triggers once
                 }
 
-                // The minigame display window (uses the existing structure)
+                // The minigame display window 
                 if (powerGameActive && !powerGameFinished)
                 {
                     Begin("Power Meter");
@@ -372,7 +353,7 @@ int main(int, char**)
                         push_log("\n>> Mom: That's my kid! The lights are back on. Thanks, sweetie!\n");
                     } else 
                     {
-                        // health penalty added here
+                        // health penalty 
                         player.takeDamage(1); 
                         Text("FAILURE! A power surge zaps you.");
                         push_log("\nOH NO! A surge hit the box, and you took damage! Maybe be more careful next time!\n");
@@ -387,7 +368,7 @@ int main(int, char**)
                     }
                     End();
                 }
-                //-------------------------POWER OUTAGE EVENT END---------
+                //-------------------------POWER OUTAGE EVENT END--------------
 
 
                 // move to living room only when minigame is completed and closed
@@ -433,7 +414,7 @@ int main(int, char**)
                         }
                     }
 
-                    // option 1: the mirror (requires mirror)
+                    // option 1: the mirror (requires item)
                     if (hasPocketMirror) 
                     {
                         if (Button("Check Reflection (Use Mirror)")) 
@@ -446,7 +427,7 @@ int main(int, char**)
                         }
                     } 
 
-                    // option 2: the escape 
+                    // option 2: the escape
                     if (Button("Bolt for the Front Door")) 
                     {
                         push_log("\nYou sprint to the door and grab the handle. It's scorching hot!");
@@ -455,7 +436,7 @@ int main(int, char**)
                         endingTriggered = true;
                     }
 
-                    // option 3: the cry for help 
+                    // option 3: the cry for help
                     if (Button("Scream for Mom")) 
                     {
                         push_log("\n'MOM! HELP!' you scream.");
@@ -470,7 +451,7 @@ int main(int, char**)
                 if (endingTriggered) 
                 {
                     Separator();
-                    TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "DAY 1 HAS CONCLUDED. TO BE CONTINUED...");
+                    TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "DAY 1 HAS CONCLUDED.");
                 }
                 break;
             }
@@ -494,15 +475,15 @@ int main(int, char**)
         if(Button("Save"))
         {
             saveClicked = true;
-            // gameEngine.saveGame("");
-            push_log("Saving not yet implemented.");
+            gameEngine.saveGame("save.txt"); 
+            push_log("Game Saved!");
         }
 
         SameLine();
         if(Button("Quit"))
         {
             quitClicked = true;
-
+            glfwSetWindowShouldClose(window, true); 
         }
 
 
