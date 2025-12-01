@@ -397,8 +397,8 @@ int main(int, char**)
 
 			case RoomEnum::ROOM_LIVING:
             {
-                TextWrapped("You are in the living room. A large, blank TV sits on a stand, emitting a faint, high-pitched whine.");
-                currentArt = gameEngine.printArt("Bedroom"); // Use a neutral background art
+                TextWrapped("You are in the living room. In front of a sofa, a large, blank TV sits on a stand, emitting a faint, high-pitched whine.");
+                currentArt = gameEngine.printArt("LivingRoom"); 
 
                 static bool inspectedTV = false;
                 static bool endingTriggered = false;
@@ -591,7 +591,7 @@ int main(int, char**)
                 }
                 else
                 {
-                    push_log("This seems important . . . I should stay here.");
+                    push_log("You are not allowed to leave.");
                 }
                 
             }
