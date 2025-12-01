@@ -430,7 +430,7 @@ int main(int, char**)
 
                 if (!inspectedTV && Button("Inspect TV")) 
                 {
-                    push_log("You walk up to the TV. The screen explodes into blinding white static. A voice cuts through: 'RUN'.");
+                    push_log("You walk up to the TV. The screen explodes into blinding white static. \nA voice cuts through: 'RUN'.");
                     currentArt = gameEngine.printArt("BrokenMirror"); // Creepy static flash
                     inspectedTV = true;
                 }
@@ -504,8 +504,15 @@ int main(int, char**)
         // Message log
         Separator();
         TextWrapped("Message Log:");
+
         BeginChild("LogRegion", ImVec2(0,150), true, ImGuiWindowFlags_HorizontalScrollbar);
         TextUnformatted(message_log.c_str());
+
+        if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY() - 5.0f)
+        {
+            ImGui::SetScrollHereY(1.0f); // Auto-scroll to bottom
+        }
+
         EndChild();
 
 //---------------saving and quiting buttons----------------
