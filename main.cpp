@@ -90,6 +90,10 @@ int main(int, char**)
     static bool powerOutageTriggered = false; // New tracker for the story
     static bool TakePowerDamage = false;
     static bool powerGameResult = false;
+    static bool powerResultAcknowledged = false;
+ 
+
+
 
     //Main loop
     while (!glfwWindowShouldClose(window))
@@ -348,7 +352,7 @@ int main(int, char**)
                     if (Button("Stop Cursor")) 
                     {
                         powerGameFinished = true;
-                        powerGameWin = powerGame.checkWinCondition(powerGame.cursorPosition);
+                        powerGameWin = powerGame.checkWinCondition(powerGame.cursorPosition);                        
                         
                     }
 
@@ -358,16 +362,14 @@ int main(int, char**)
                 // Minigame Result window
                 if (powerGameFinished)
                 {
-                    Begin("Power Meter Result", &powerGameFinished, ImGuiWindowFlags_AlwaysAutoResize);
-                    if (!powerGameResult)
-                    {
+                    Begin("Power Meter Result", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
                         if (powerGameWin) 
                         {
                             Text("Success! The power is back.");
-                            push_log("\n>> Mom: That's my kid! The lights are back on. Thanks, sweetie!\n");
+                            //push_log("\n>> Mom: That's my kid! The lights are back on. Thanks, sweetie!\n");
                         }
                      
-                    else 
+                        else 
                         {
                             // health penalty added here
                             if(!TakePowerDamage)
@@ -376,18 +378,25 @@ int main(int, char**)
                                 TakePowerDamage = true;
                             }
                             Text("FAILURE! A power surge zaps you.");
-                            push_log("\nOH NO! A surge hit the box, and you took damage! Maybe be more careful next time!\n");
-                            push_log("\n>> Mom: Well, the lights are back on, but it seem unstable.\n");
+                            //push_log("\nOH NO! A surge hit the box, and you took damage! Maybe be more careful next time!\n");
+                            //push_log("\n>> Mom: Well, the lights are back on, but it seem unstable.\n");
                         }
-                        powerGameResult = true;
-                    }
+
+                        //fixes looping message
+                        if (!powerGameResult) 
+                        {
+                            push_log(powerGameWin ? "\n>> Mom: That's my kid! The lights are back on. Thanks, sweetie!\n"
+                                                : "\nOH NO! A surge hit the box, and you took damage! Maybe be more careful next time!\n"
+                                                    "\n>> Mom: Well, the lights are back on, but it seems unstable.\n");
+                            powerGameResult = true;
+                        }
+                    
+
                     if (Button("Close")) 
                     {
-                        powerGameFinished = false;
                         powerGameActive = false;
                         canTravel = true;
-                        powerGameResult = false;
-                        TakePowerDamage = false;
+                        powerResultAcknowledged = true;
                     }
                     End();
                 }
@@ -395,13 +404,18 @@ int main(int, char**)
 
 
                 // move to living room only when minigame is completed and closed
-                if (powerOutageTriggered && !powerGameActive && !powerGameFinished && !movedToLivingRoom) 
+                if  (powerOutageTriggered && powerResultAcknowledged && !movedToLivingRoom)
                 {
                     gameEngine.visitRoom("Living Room");
                     showStorageWindow = false;
                     currentStorageLocation.clear();
                     push_log("You finish breakfast and get ready for the day. Moving to Living Room...");
+
                     movedToLivingRoom = true;
+                    powerGameFinished = false;
+                    powerGameResult = false;
+                    TakePowerDamage = false;
+                    powerResultAcknowledged = false;
                 }
                 break;
             }
