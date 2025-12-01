@@ -89,6 +89,7 @@ int main(int, char**)
     static bool powerGameWin = false;
     static bool powerOutageTriggered = false; // New tracker for the story
     static bool TakePowerDamage = false;
+    static bool powerGameResult = false;
 
     //Main loop
     while (!glfwWindowShouldClose(window))
@@ -259,8 +260,10 @@ int main(int, char**)
                 if (rested && checkedDrawer && checkedTrophy && !movedToKitchen) 
                 {
                     push_log("\n>> Mom: Sweetie! Breakfeast is ready!\n");
-                    push_log("She has always called you that. It's a little embarrassing, but mostly endearing\n");
+                    push_log("She has always called you that\nIt's a little embarrassing, but mostly endearing\n");
                     gameEngine.visitRoom("Kitchen");
+                    showStorageWindow = false;
+                    currentStorageLocation.clear();
                     movedToKitchen = true;
 
                 }
@@ -286,8 +289,8 @@ int main(int, char**)
 
                 if (!askedAboutHand && Button("Ask your mom about her hand")) 
                 {
-                    push_log(player.getName() + ": What happened to your hand mom?");
-                    push_log(">> Mom: Oh! I was just cleaning the basement and touched some broken glass. No big deal sweetie.");
+                    push_log(">> " + player.getName() + ": What happened to your hand mom?");
+                    push_log(">> Mom: Oh! I was just cleaning the basement and touched some broken glass.\nNo big deal sweetie.");
                     askedAboutHand = true;
                 }
 
@@ -356,29 +359,35 @@ int main(int, char**)
                 if (powerGameFinished)
                 {
                     Begin("Power Meter Result", &powerGameFinished, ImGuiWindowFlags_AlwaysAutoResize);
-                    if (powerGameWin) 
+                    if (!powerGameResult)
                     {
-                        Text("Success! The power is back.");
-                        push_log("\n>> Mom: That's my kid! The lights are back on. Thanks, sweetie!\n");
-                    } 
-                    else 
-                    {
-                        // health penalty added here
-                        if(!TakePowerDamage)
+                        if (powerGameWin) 
                         {
-                            player.takeDamage(2);
-                            TakePowerDamage = true;
+                            Text("Success! The power is back.");
+                            push_log("\n>> Mom: That's my kid! The lights are back on. Thanks, sweetie!\n");
                         }
-                        Text("FAILURE! A power surge zaps you.");
-                        push_log("\nOH NO! A surge hit the box, and you took damage! Maybe be more careful next time!\n");
-                        push_log("\n>> Mom: Well, the lights are back on, but it seem unstable.\n");
-
+                     
+                    else 
+                        {
+                            // health penalty added here
+                            if(!TakePowerDamage)
+                            {
+                                player.takeDamage(2);
+                                TakePowerDamage = true;
+                            }
+                            Text("FAILURE! A power surge zaps you.");
+                            push_log("\nOH NO! A surge hit the box, and you took damage! Maybe be more careful next time!\n");
+                            push_log("\n>> Mom: Well, the lights are back on, but it seem unstable.\n");
+                        }
+                        powerGameResult = true;
                     }
                     if (Button("Close")) 
                     {
                         powerGameFinished = false;
                         powerGameActive = false;
                         canTravel = true;
+                        powerGameResult = false;
+                        TakePowerDamage = false;
                     }
                     End();
                 }
@@ -389,6 +398,8 @@ int main(int, char**)
                 if (powerOutageTriggered && !powerGameActive && !powerGameFinished && !movedToLivingRoom) 
                 {
                     gameEngine.visitRoom("Living Room");
+                    showStorageWindow = false;
+                    currentStorageLocation.clear();
                     push_log("You finish breakfast and get ready for the day. Moving to Living Room...");
                     movedToLivingRoom = true;
                 }
@@ -588,6 +599,8 @@ int main(int, char**)
                 if(canTravel)
                 {
                     gameEngine.visitRoom(room.getName());
+                    showStorageWindow = false;
+                    currentStorageLocation.clear();
                 }
                 else
                 {
