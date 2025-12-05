@@ -177,13 +177,6 @@ int main(int, char**)
                 renderLoadGameWindow(showLoadWindow, gameEngine, message_log);
             }
 
-            // If a load just occurred, advance past the title screen and prepare player
-            if (!showLoadWindow && gameEngine.wasJustLoaded()) {
-                titleScreenDone = true;
-                playerCreated = true;
-                gameEngine.clearJustLoaded();
-            }
-
             Render();
             int display_w, display_h;
             glfwGetFramebufferSize(window, &display_w, &display_h);
@@ -230,6 +223,27 @@ int main(int, char**)
 //-------------------Main Scene Window---------------------------
         Begin("Scene", nullptr, ImGuiWindowFlags_NoCollapse);
 
+        // Quick Prev/Next scene navigation buttons
+        if (Button("Prev Scene")) {
+            if (canTravel) {
+                gameEngine.visitPrevRoom();
+                showStorageWindow = false;
+                currentStorageLocation.clear();
+            } else {
+                push_log("You are not allowed to leave.");
+            }
+        }
+        SameLine();
+        if (Button("Next Scene")) {
+            if (canTravel) {
+                gameEngine.visitNextRoom();
+                showStorageWindow = false;
+                currentStorageLocation.clear();
+            } else {
+                push_log("You are not allowed to leave.");
+            }
+        }
+
 		currentRoomPtr = gameEngine.getCurrentRoom();
 		currentRoomEnum = currentRoomPtr->getRoomEnum();
 		currentRoomName = (currentRoomPtr != nullptr) ? currentRoomPtr->getName() : "Unknown";
@@ -269,16 +283,18 @@ int main(int, char**)
                 }
 
 
-                // move to kitchen scene
+                // Offer an explicit Continue button to move to the kitchen
                 if (rested && checkedDrawer && checkedTrophy && !movedToKitchen) 
                 {
-                    push_log("\n>> Mom: Sweetie! Breakfeast is ready!\n");
-                    push_log("She has always called you that\nIt's a little embarrassing, but mostly endearing\n");
-                    gameEngine.visitRoom("Kitchen");
-                    showStorageWindow = false;
-                    currentStorageLocation.clear();
-                    movedToKitchen = true;
-
+                    TextWrapped("You are ready to continue to the kitchen.");
+                    if (Button("Continue")) {
+                        push_log("\n>> Mom: Sweetie! Breakfeast is ready!\n");
+                        push_log("She has always called you that\nIt's a little embarrassing, but mostly endearing\n");
+                        gameEngine.visitRoom("Kitchen");
+                        showStorageWindow = false;
+                        currentStorageLocation.clear();
+                        movedToKitchen = true;
+                    }
                 }
                 break;
             }
@@ -412,19 +428,22 @@ int main(int, char**)
                 //-------------------------POWER OUTAGE EVENT END---------------------------------
 
 
-                // move to living room only when minigame is completed and closed
+                // Offer a Continue button to move to the living room after the power event
                 if  (powerOutageTriggered && powerResultAcknowledged && !movedToLivingRoom)
                 {
-                    gameEngine.visitRoom("Living Room");
-                    showStorageWindow = false;
-                    currentStorageLocation.clear();
-                    push_log("You finish breakfast and get ready for the day. Moving to Living Room...");
+                    TextWrapped("You can continue to the Living Room now.");
+                    if (Button("Continue")) {
+                        gameEngine.visitRoom("Living Room");
+                        showStorageWindow = false;
+                        currentStorageLocation.clear();
+                        push_log("You finish breakfast and get ready for the day. Moving to Living Room...");
 
-                    movedToLivingRoom = true;
-                    powerGameFinished = false;
-                    powerGameResult = false;
-                    TakePowerDamage = false;
-                    powerResultAcknowledged = false;
+                        movedToLivingRoom = true;
+                        powerGameFinished = false;
+                        powerGameResult = false;
+                        TakePowerDamage = false;
+                        powerResultAcknowledged = false;
+                    }
                 }
                 break;
             }

@@ -55,7 +55,11 @@ class GameEngine {
         void lookInStorageLocation(const string& roomName, const string& locationName, bool& showStorageWindow, std::string& message_log);
         void renderStorageLocationWindow(const string& roomName, const string& locationName, bool& showStorageWindow, std::string& message_log);
 		void visitRoom(const string& roomName);
-        // load flag helpers
+        // Visit the next/previous room in the internal rooms list (wraps around)
+        void visitNextRoom();
+        void visitPrevRoom();
+        
+        // Just-loaded flag management
         void markJustLoaded();
         bool wasJustLoaded() const;
         void clearJustLoaded();
