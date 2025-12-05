@@ -38,10 +38,10 @@ GameEngine::GameEngine()
     Item* mirror = new Item("mirror", ItemType::MIRROR, 0);
     Item* pencil = new Item("pencil", ItemType::MISC, 0);
     Item* bandaids = new Item("bandage", ItemType::BANDAGE, 5);
-    Item* boxcutter = new Item("boxcutter", ItemType::MISC, 0);
+    Item* boxcutter = new Item("boxcutter", ItemType::BOXCUTTER, -2);
     Item* snackBar = new Item("snack bar", ItemType::FOOD, 3);
     // (Kitchen items)
-    Item* cornstarch = new Item("cornstarch", ItemType::MISC, 0);
+    Item* cornstarch = new Item("cornstarch", ItemType::FOOD, -2);
     Item* syrup = new Item("syrup", ItemType::FOOD, 1);
     Item* salt = new Item("salt", ItemType::MISC, 0);
     Item* cookie = new Item("cookie", ItemType::FOOD, 2);
@@ -109,22 +109,39 @@ void GameEngine::useItem(const string& itemName, std::string& message_log){
     for (const Item& item : inventory) {
         if (item.getName() == itemName) {
             switch (item.getType()) {
-                case ItemType::FOOD:
-                    player->heal(item.getHealAmount());
-                    push_log("You ate " + itemName + " and healed " + to_string(item.getHealAmount()) + " health.");
+                case ItemType::FOOD: {
+					int health = item.getHealAmount();
+					if (health <= 0) {
+						// Take damage
+						player->takeDamage(-health);
+						push_log("You ate " + itemName + " and took " + to_string(-health) + " damage.");
+					} else {
+						// Healed
+                    	player->heal(health);
+                    	push_log("You ate " + itemName + " and healed " + to_string(health) + " health.");
+					}
                     player->removeFromInventory(itemName);
                     return;
-                case ItemType::BANDAGE:
+				}
+                case ItemType::BANDAGE: {
                     player->heal(item.getHealAmount());
                     push_log("You used " + itemName + " and healed " + to_string(item.getHealAmount()) + " health.");
                     player->removeFromInventory(itemName);
                     return;
-                case ItemType::MIRROR:
+				}
+                case ItemType::MIRROR: {
                     push_log("\nYou hold the mirror up and see your " + player->getEyes() + " eyes staring back at you.");
                     return;
-                default:
+				}
+				case ItemType::BOXCUTTER: {
+					player->takeDamage(-item.getHealAmount());
+					push_log("You fiddle with the boxcutter and accidentally cut yourself, losing " + to_string(-item.getHealAmount()) + " health.");
+					return;
+				}
+                default: {
                     push_log(itemName + " cannot be used right now.");
                     return;
+				}
             }
         }
     }
