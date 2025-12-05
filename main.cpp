@@ -80,6 +80,7 @@ int main(int, char**)
     static bool showSaveWindow = false;
     static bool movedToKitchen = false;
     static bool movedToLivingRoom = false;
+    static bool momCalls = false;
 
     
     // Power Meter Minigame state
@@ -224,7 +225,7 @@ int main(int, char**)
         Begin("Scene", nullptr, ImGuiWindowFlags_NoCollapse);
 
         // Quick Prev/Next scene navigation buttons
-        if (Button("Prev Scene")) {
+        /*if (Button("Prev Scene")) {
             if (canTravel) {
                 gameEngine.visitPrevRoom();
                 showStorageWindow = false;
@@ -246,7 +247,14 @@ int main(int, char**)
 
 		currentRoomPtr = gameEngine.getCurrentRoom();
 		currentRoomEnum = currentRoomPtr->getRoomEnum();
-		currentRoomName = (currentRoomPtr != nullptr) ? currentRoomPtr->getName() : "Unknown";
+		currentRoomName = (currentRoomPtr != nullptr) ? currentRoomPtr->getName() : "Unknown";*/
+
+        currentRoomPtr = gameEngine.getCurrentRoom();
+        if (currentRoomPtr != nullptr)
+        {
+            currentRoomEnum = currentRoomPtr->getRoomEnum();
+            currentRoomName = currentRoomPtr->getName();
+        }
 
 		switch (currentRoomEnum)
         {
@@ -286,14 +294,16 @@ int main(int, char**)
                 // Offer an explicit Continue button to move to the kitchen
                 if (rested && checkedDrawer && checkedTrophy && !movedToKitchen) 
                 {
-                    TextWrapped("You are ready to continue to the kitchen.");
-                    if (Button("Continue")) {
+                    TextWrapped("You are ready to continue.");
+                    if (Button("Continue")) 
+                    {
+                        momCalls = true;
                         push_log("\n>> Mom: Sweetie! Breakfeast is ready!\n");
                         push_log("She has always called you that\nIt's a little embarrassing, but mostly endearing\n");
-                        gameEngine.visitRoom("Kitchen");
-                        showStorageWindow = false;
-                        currentStorageLocation.clear();
-                        movedToKitchen = true;
+                        //gameEngine.visitRoom("Kitchen");
+                        //showStorageWindow = false;
+                        //currentStorageLocation.clear();
+                        //movedToKitchen = true;
                     }
                 }
                 break;
@@ -419,6 +429,7 @@ int main(int, char**)
 
                     if (Button("Close")) 
                     {
+                        powerGameFinished = false;
                         powerGameActive = false;
                         canTravel = true;
                         powerResultAcknowledged = true;
@@ -432,7 +443,8 @@ int main(int, char**)
                 if  (powerOutageTriggered && powerResultAcknowledged && !movedToLivingRoom)
                 {
                     TextWrapped("You can continue to the Living Room now.");
-                    if (Button("Continue")) {
+                    if (Button("Continue")) 
+                    {
                         gameEngine.visitRoom("Living Room");
                         showStorageWindow = false;
                         currentStorageLocation.clear();
@@ -567,34 +579,6 @@ int main(int, char**)
 
             static std::string pendingNextRoom = "";
 
-            if (hasNext) {
-                if (Button("Continue")) {
-                    // request confirmation before changing scene
-                    pendingNextRoom = nextRoomName;
-                    ImGui::OpenPopup("Confirm Transition");
-                }
-                SameLine();
-            }
-
-            // Confirmation modal
-            if (ImGui::BeginPopupModal("Confirm Transition", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
-                ImGui::Text("Move to %s?", pendingNextRoom.c_str());
-                ImGui::Separator();
-                if (ImGui::Button("Yes", ImVec2(120,0))) {
-                    if (!pendingNextRoom.empty()) {
-                        gameEngine.visitRoom(pendingNextRoom);
-                        push_log(std::string("Continue: moving to ") + pendingNextRoom);
-                    }
-                    pendingNextRoom.clear();
-                    ImGui::CloseCurrentPopup();
-                }
-                ImGui::SameLine();
-                if (ImGui::Button("No", ImVec2(120,0))) {
-                    pendingNextRoom.clear();
-                    ImGui::CloseCurrentPopup();
-                }
-                ImGui::EndPopup();
-            }
         }
 
         if(Button("Save"))
@@ -711,6 +695,35 @@ int main(int, char**)
                 
             }
          }
+//-----------------------transitions---------------------------
+         if (momCalls)
+         {
+            OpenPopup("MomCalls");
+         }
+
+        if (BeginPopupModal("MomCalls", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+        {
+            TextWrapped("Do you want to go to the kitchen?");
+
+            if (Button("Go to Kitchen"))
+            {
+                gameEngine.visitRoom("Kitchen");
+                movedToKitchen = true;
+                momCalls = false;
+                CloseCurrentPopup();
+            }
+
+            SameLine();
+
+            if (Button("Stay Here"))
+            {
+                momCalls = false;
+                CloseCurrentPopup();
+            }
+
+            EndPopup();
+}
+
 
         End();
 

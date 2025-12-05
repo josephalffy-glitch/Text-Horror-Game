@@ -56,8 +56,8 @@ class GameEngine {
         void renderStorageLocationWindow(const string& roomName, const string& locationName, bool& showStorageWindow, std::string& message_log);
 		void visitRoom(const string& roomName);
         // Visit the next/previous room in the internal rooms list (wraps around)
-        void visitNextRoom();
-        void visitPrevRoom();
+        //void visitNextRoom();
+        //void visitPrevRoom();
         
         // Just-loaded flag management
         void markJustLoaded();

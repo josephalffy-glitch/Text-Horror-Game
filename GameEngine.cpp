@@ -359,7 +359,7 @@ Room* GameEngine::getCurrentRoom() {
 	return nullptr; // return nullptr if currentRoom is null
 }
 
-void GameEngine::visitNextRoom() {
+/*void GameEngine::visitNextRoom() {
     if (rooms->empty()) return;
     int idx = -1;
     string currentRoomName = currentRoom ? currentRoom->getName() : string();
@@ -387,7 +387,7 @@ void GameEngine::visitPrevRoom() {
     int prev = 0;
     if (idx >= 0) prev = (idx - 1 + (int)rooms->size()) % (int)rooms->size();
     visitRoom((*rooms)[prev].getName());
-}
+}*/
 
 // Simple save format (text):
 // line1: name
