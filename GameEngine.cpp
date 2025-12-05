@@ -449,6 +449,24 @@ void GameEngine::saveGame(const string& saveFile)
         }
         ofs << "\n";
 
+		// Save room storage locations and their items
+		for (const Room &r : *rooms) {
+    		vector<StorageLocation> locations = r.getStorageLocations();
+    		for (const StorageLocation &loc : locations) {
+        		vector<Item> items = r.getItemsInLocation(loc.name);
+        		if (!items.empty()) {
+            		// Format: roomEnum|locationName|item1,item2,item3
+            		ofs << static_cast<int>(r.getRoomEnum()) << "|" << loc.name << "|";
+            		for (size_t i = 0; i < items.size(); ++i) {
+                		ofs << items[i].getName();
+                		if (i + 1 < items.size()) ofs << ",";
+            		}
+            		ofs << "\n";
+        		}
+    		}
+		}
+		ofs << "END_STORAGE\n"; // Marker to indicate end of storage data
+
     ofs.close();
     cout << "Saved game to " << path << endl;
 }
@@ -557,6 +575,80 @@ void GameEngine::loadGame(const string& saveFile)
             }
         }
     }
+
+	// Load storage locations and items
+	// First, clear all items from all storage locations
+	for (Room &r : *rooms) {
+	    vector<StorageLocation> locations = r.getStorageLocations();
+	    for (const StorageLocation &loc : locations) {
+	        // Clear all items from this location
+	        vector<Item> items = r.getItemsInLocation(loc.name);
+	        for (const Item &item : items) {
+	            r.removeItemFromLocation(loc.name, item);
+	        }
+	    }
+	}
+
+	// Now read and restore items from save file
+	while (getline(ifs, line)) {
+	    if (line == "END_STORAGE") break;
+	    if (line.empty()) continue;
+    
+	    // Parse: roomEnum|locationName|item1,item2,item3
+	    size_t pipe1 = line.find('|');
+	    size_t pipe2 = line.find('|', pipe1 + 1);
+	    if (pipe1 == string::npos || pipe2 == string::npos) continue;
+    
+	    int roomEnum = -1;
+	    try { roomEnum = stoi(line.substr(0, pipe1)); } catch(...) { continue; }
+    
+	    string locationName = line.substr(pipe1 + 1, pipe2 - pipe1 - 1);
+	    string itemsStr = line.substr(pipe2 + 1);
+    
+	    // Find the room
+	    Room* targetRoom = nullptr;
+	    for (Room &r : *rooms) {
+	        if (static_cast<int>(r.getRoomEnum()) == roomEnum) {
+	            targetRoom = &r;
+	            break;
+	        }
+	    }
+    
+	    if (targetRoom == nullptr) continue;
+    
+	    // Parse items
+	    if (!itemsStr.empty()) {
+	        stringstream itemStream(itemsStr);
+	        string itemName;
+	        while (getline(itemStream, itemName, ',')) {
+	            if (itemName.empty()) continue;
+            
+	            // Map item name to type (same logic as inventory)
+	            ItemType t = ItemType::MISC;
+	            int healAmt = 0;
+	            if (itemName == "mirror") t = ItemType::MIRROR;
+	            else if (itemName == "bandage" || itemName == "bandaids") {
+	                t = ItemType::BANDAGE;
+	                healAmt = 5;
+	            }
+	            else if (itemName == "cookie") {
+	                t = ItemType::FOOD;
+	                healAmt = 2;
+	            }
+	            else if (itemName == "snack bar") {
+	                t = ItemType::FOOD;
+	                healAmt = 3;
+	            }
+	            else if (itemName == "syrup") {
+	                t = ItemType::FOOD;
+	                healAmt = 1;
+	            }
+            
+	            Item restoredItem(itemName, t, healAmt);
+	            targetRoom->addItemToLocation(locationName, restoredItem);
+	        }
+	    }
+	}
 
     ifs.close();
     cout << "Loaded game from " << path << endl;
