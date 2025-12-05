@@ -13,7 +13,7 @@ private:
 
 public:
     // Constructor: initialize health bar
-    Health(int maxHealth = 10);
+    Health(int maxHealth = 5);
 
     // Methods
     void takeDamage(int amount);
