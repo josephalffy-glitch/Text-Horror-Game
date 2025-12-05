@@ -319,6 +319,7 @@ int main(int, char**)
                 {
                     push_log("\n--------------------------------------------------------------------------------------------------------------\n");
                     push_log("You run to the kitchen, ready for a fresh meal.\nYour mom turns around with a plate of waffles drenched in syrup.\nAs she sets the plate down, you notice her right hand is bandaged up.");
+                     push_log("\n--------------------------------------------------------------------------------------------------------------\n");
                     kitchenDialogue = false;
                 }
                     currentArt = gameEngine.printArt("Kitchen");
@@ -348,20 +349,23 @@ int main(int, char**)
                     currentStorageLocation = "Cabinet";
                     gameEngine.lookInStorageLocation(currentRoomName, currentStorageLocation, showStorageWindow, message_log);
                     //checkedCabinet = true; 
-                    push_log("You open the kitchen cabinet. You can take a look inside the new window.");
+                    push_log("You open the kitchen cabinet and see the following items: ");
                 }
                 
                 //-------------------------POWER OUTAGE EVENT START-------------------------------
                 // The power outage occurs when all main kitchen actions are completed
                 if (ateBreakfast && askedAboutHand && /*checkedCabinet && */!powerOutageTriggered) 
                 {
-                    push_log("\n------------------------------------------------");
+                    push_log("\n-----------------------------------------------------------------------");
                     push_log("A sudden darkness envelops the kitchen. The lights flicker and die.");
                     push_log(">> Mom: Oh no, the power must be out! I hate when that happens.");
                     push_log("You hear a strange humming sound from the basement door.");
                     push_log(">> Mom: Honey, can you go check the auxiliary power unit down in the cellar?");
-                    push_log("------------------------------------------------\n");
+                    push_log("-------------------------------------------------------------------------\n");
+
+                    push_log("You go down into the cellar and try to fix the power unit.\nIt shouldn't be too hard . . .\nIt's all about timing.\n");
                     
+                    showStorageWindow = false;
                     powerGameActive = true;
                     powerOutageTriggered = true; // Set to true so this only triggers once
                     canTravel = false; //cant visit other rooms
@@ -457,7 +461,7 @@ int main(int, char**)
                         gameEngine.visitRoom("Living Room");
                         showStorageWindow = false;
                         currentStorageLocation.clear();
-                        push_log("You finish breakfast and get ready for the day. Moving to Living Room...");
+                        //push_log("You finish breakfast and get ready for the day. Moving to Living Room...");
 
                         movedToLivingRoom = true;
                         powerGameFinished = false;
@@ -479,8 +483,9 @@ int main(int, char**)
 
                 if (!inspectedTV && Button("Inspect TV")) 
                 {
-                    push_log("You walk up to the TV. The screen explodes into blinding white static. \nA voice cuts through: 'RUN'.");
-                    currentArt = gameEngine.printArt("BrokenMirror"); // Creepy static flash
+                    push_log("\n-----------------------------------------------------------------------------------------------------");
+                    push_log("\nYou walk up to the TV. The screen explodes into blinding white static. \nA voice cuts through: 'RUN'.");
+                    push_log("\n-----------------------------------------------------------------------------------------------------");
                     inspectedTV = true;
                 }
 
