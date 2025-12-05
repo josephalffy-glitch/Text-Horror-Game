@@ -55,7 +55,6 @@ int main(int, char**)
     Room* currentRoomPtr = gameEngine.getCurrentRoom();
 	RoomEnum currentRoomEnum = currentRoomPtr->getRoomEnum();
     std::string currentRoomName = (currentRoomPtr != nullptr) ? currentRoomPtr->getName() : "Bedroom";
-    static bool showStorageWindow = false;
     static std::string currentStorageLocation = "";
 
     // Message log for GUI
@@ -81,6 +80,7 @@ int main(int, char**)
     static bool movedToKitchen = false;
     static bool movedToLivingRoom = false;
     static bool momCalls = false;
+	static bool showStorageWindow = false;
 
     
     // Power Meter Minigame state
@@ -301,7 +301,7 @@ int main(int, char**)
                         push_log("\n>> Mom: Sweetie! Breakfeast is ready!\n");
                         push_log("She has always called you that\nIt's a little embarrassing, but mostly endearing\n");
                         //gameEngine.visitRoom("Kitchen");
-                        //showStorageWindow = false;
+                        showStorageWindow = false;
                         //currentStorageLocation.clear();
                         //movedToKitchen = true;
                     }
