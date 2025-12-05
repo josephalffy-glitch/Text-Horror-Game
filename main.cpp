@@ -81,6 +81,7 @@ int main(int, char**)
     static bool movedToKitchen = false;
     static bool movedToLivingRoom = false;
     static bool momCalls = false;
+    bool kitchenDialogue = false;
 
     
     // Power Meter Minigame state
@@ -304,6 +305,8 @@ int main(int, char**)
                         //showStorageWindow = false;
                         //currentStorageLocation.clear();
                         //movedToKitchen = true;
+                        kitchenDialogue = true;
+                        
                     }
                 }
                 break;
@@ -311,8 +314,14 @@ int main(int, char**)
 
 			case RoomEnum::ROOM_KITCHEN:
             {
-                TextWrapped("You run to the kitchen, ready for a fresh meal.\nYour mom turns around with a plate of waffles drenched in syrup.\nAs she sets the plate down, you notice her right hand is bandaged up.");
-                currentArt = gameEngine.printArt("Kitchen");
+                TextWrapped("The kitchen is cozy and simple. Equipped with a small dining table and little counter space.\nThere are a few cabinets above the counters to where a plethora of snacks are stored.");
+                if(kitchenDialogue)
+                {
+                    push_log("\n--------------------------------------------------------------------------------------------------------------\n");
+                    push_log("You run to the kitchen, ready for a fresh meal.\nYour mom turns around with a plate of waffles drenched in syrup.\nAs she sets the plate down, you notice her right hand is bandaged up.");
+                    kitchenDialogue = false;
+                }
+                    currentArt = gameEngine.printArt("Kitchen");
 
                 // Story trackers
                 static bool ateBreakfast = false;
