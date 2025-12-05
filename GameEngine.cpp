@@ -358,6 +358,34 @@ Room* GameEngine::getCurrentRoom() {
 	return nullptr; // return nullptr if currentRoom is null
 }
 
+void GameEngine::visitNextRoom() {
+    if (rooms->empty()) return;
+    int idx = -1;
+    for (size_t i = 0; i < rooms->size(); ++i) {
+        if (&(*rooms)[i] == currentRoom || (*rooms)[i].getName() == (currentRoom ? currentRoom->getName() : string())) {
+            idx = (int)i;
+            break;
+        }
+    }
+    int next = 0;
+    if (idx >= 0) next = (idx + 1) % (int)rooms->size();
+    visitRoom((*rooms)[next].getName());
+}
+
+void GameEngine::visitPrevRoom() {
+    if (rooms->empty()) return;
+    int idx = -1;
+    for (size_t i = 0; i < rooms->size(); ++i) {
+        if (&(*rooms)[i] == currentRoom || (*rooms)[i].getName() == (currentRoom ? currentRoom->getName() : string())) {
+            idx = (int)i;
+            break;
+        }
+    }
+    int prev = 0;
+    if (idx >= 0) prev = (idx - 1 + (int)rooms->size()) % (int)rooms->size();
+    visitRoom((*rooms)[prev].getName());
+}
+
 // Simple save format (text):
 // line1: name
 // line2: hair
