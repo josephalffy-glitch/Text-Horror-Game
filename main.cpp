@@ -280,7 +280,7 @@ int main(int, char**)
                 {
                     currentStorageLocation = "Drawer";
                     gameEngine.lookInStorageLocation(currentRoomName, currentStorageLocation, showStorageWindow, message_log);
-                    checkedDrawer = true;
+                    //checkedDrawer = true;
                 }
             
 
@@ -292,7 +292,7 @@ int main(int, char**)
 
 
                 // Offer an explicit Continue button to move to the kitchen
-                if (rested && checkedDrawer && checkedTrophy && !movedToKitchen) 
+                if (rested/* && checkedDrawer*/ && checkedTrophy && !movedToKitchen) 
                 {
                     TextWrapped("You are ready to continue.");
                     if (Button("Continue")) 
@@ -338,13 +338,13 @@ int main(int, char**)
                 {
                     currentStorageLocation = "Cabinet";
                     gameEngine.lookInStorageLocation(currentRoomName, currentStorageLocation, showStorageWindow, message_log);
-                    checkedCabinet = true; 
+                    //checkedCabinet = true; 
                     push_log("You open the kitchen cabinet. You can take a look inside the new window.");
                 }
                 
                 //-------------------------POWER OUTAGE EVENT START-------------------------------
                 // The power outage occurs when all main kitchen actions are completed
-                if (ateBreakfast && askedAboutHand && checkedCabinet && !powerOutageTriggered) 
+                if (ateBreakfast && askedAboutHand && /*checkedCabinet && */!powerOutageTriggered) 
                 {
                     push_log("\n------------------------------------------------");
                     push_log("A sudden darkness envelops the kitchen. The lights flicker and die.");
