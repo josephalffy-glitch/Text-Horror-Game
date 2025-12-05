@@ -31,6 +31,7 @@ GameEngine::GameEngine()
     rooms = new vector<Room>();
     currentRoom = nullptr;
     visitedRooms = new vector<Room>();
+    justLoaded = false;
 
     // Initialize game items
     // (Bedroom items)
@@ -361,8 +362,9 @@ Room* GameEngine::getCurrentRoom() {
 void GameEngine::visitNextRoom() {
     if (rooms->empty()) return;
     int idx = -1;
+    string currentRoomName = currentRoom ? currentRoom->getName() : string();
     for (size_t i = 0; i < rooms->size(); ++i) {
-        if (&(*rooms)[i] == currentRoom || (*rooms)[i].getName() == (currentRoom ? currentRoom->getName() : string())) {
+        if ((*rooms)[i].getName() == currentRoomName) {
             idx = (int)i;
             break;
         }
@@ -375,8 +377,9 @@ void GameEngine::visitNextRoom() {
 void GameEngine::visitPrevRoom() {
     if (rooms->empty()) return;
     int idx = -1;
+    string currentRoomName = currentRoom ? currentRoom->getName() : string();
     for (size_t i = 0; i < rooms->size(); ++i) {
-        if (&(*rooms)[i] == currentRoom || (*rooms)[i].getName() == (currentRoom ? currentRoom->getName() : string())) {
+        if ((*rooms)[i].getName() == currentRoomName) {
             idx = (int)i;
             break;
         }
@@ -427,6 +430,24 @@ void GameEngine::saveGame(const string& saveFile)
 
     // Current health
     ofs << player->getCurrentHealth() << "\n";
+
+        // Current room enum (int). -1 = none
+        int curRoomVal = -1;
+        if (currentRoom != nullptr) {
+            curRoomVal = static_cast<int>(currentRoom->getRoomEnum());
+        }
+        ofs << curRoomVal << "\n";
+
+        // Visited rooms: write comma-separated enum ints
+        bool first = true;
+        for (const Room &r : *rooms) {
+            if (r.isVisited()) {
+                if (!first) ofs << ",";
+                ofs << static_cast<int>(r.getRoomEnum());
+                first = false;
+            }
+        }
+        ofs << "\n";
 
     ofs.close();
     cout << "Saved game to " << path << endl;
@@ -496,8 +517,66 @@ void GameEngine::loadGame(const string& saveFile)
         player->heal(savedHealth - current);
     }
 
+    // read current room enum
+    if (!getline(ifs, line)) { cout << "Save file malformed (current room)\n"; return; }
+    int curRoomVal = -1;
+    try { curRoomVal = stoi(line); } catch(...) { curRoomVal = -1; }
+
+    // read visited rooms list (comma-separated ints)
+    if (!getline(ifs, line)) { cout << "Save file malformed (visited rooms)\n"; return; }
+    vector<int> visitedVals;
+    if (!line.empty()) {
+        stringstream ss2(line);
+        string tok;
+        while (getline(ss2, tok, ',')) {
+            try { visitedVals.push_back(stoi(tok)); } catch(...) { }
+        }
+    }
+
+    // Clear existing visited flags, then set according to loaded list
+    for (Room &r : *rooms) {
+        r.setVisited(false);
+    }
+    visitedRooms->clear();
+    for (int v : visitedVals) {
+        for (Room &r : *rooms) {
+            if (static_cast<int>(r.getRoomEnum()) == v) {
+                r.setVisited(true);
+                visitedRooms->push_back(r);
+                break;
+            }
+        }
+    }
+
+    // Set current room pointer based on curRoomVal
+    if (curRoomVal >= 0) {
+        for (Room &r : *rooms) {
+            if (static_cast<int>(r.getRoomEnum()) == curRoomVal) {
+                currentRoom = &r;
+                break;
+            }
+        }
+    }
+
     ifs.close();
     cout << "Loaded game from " << path << endl;
+    // mark that a load occurred so UI can react
+    justLoaded = true;
+}
+
+void GameEngine::markJustLoaded()
+{
+    justLoaded = true;
+}
+
+bool GameEngine::wasJustLoaded() const
+{
+    return justLoaded;
+}
+
+void GameEngine::clearJustLoaded()
+{
+    justLoaded = false;
 }
 /*void loadSave() {
     cout << "loadSave() called" << endl;

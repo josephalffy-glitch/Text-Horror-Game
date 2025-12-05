@@ -24,6 +24,7 @@ class GameEngine {
         vector<Room>* rooms; // Pointer to a vector of Room objects
 		Room* currentRoom; // Pointer to the current room the player is in
 		vector<Room>* visitedRooms; // Pointer to a vector of visited rooms
+        bool justLoaded; // flag set when a load operation completed
 
         // Private constructor
         GameEngine();
@@ -57,6 +58,11 @@ class GameEngine {
         // Visit the next/previous room in the internal rooms list (wraps around)
         void visitNextRoom();
         void visitPrevRoom();
+        
+        // Just-loaded flag management
+        void markJustLoaded();
+        bool wasJustLoaded() const;
+        void clearJustLoaded();
 
 };
 

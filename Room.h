@@ -34,12 +34,12 @@ class Room {
         Room();
         Room(string name, string description, vector<StorageLocation> storageLocations, bool visited,RoomEnum roomEnum);
         // getters
-        string getName();
-        string getDescription();
-		RoomEnum getRoomEnum();
-        vector<StorageLocation> getStorageLocations();
-        vector<Item> getItemsInLocation(string locationName);
-        bool isVisited();
+        string getName() const;
+        string getDescription() const;
+        RoomEnum getRoomEnum() const;
+        vector<StorageLocation> getStorageLocations() const;
+        vector<Item> getItemsInLocation(string locationName) const;
+        bool isVisited() const;
         // setters
         void setName(string name);
         void setDescription(string description);

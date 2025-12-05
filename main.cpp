@@ -203,6 +203,8 @@ int main(int, char**)
                 player.setEyes(eyesBuffer);
                 playerCreated = true;
                 push_log("Player created!");
+                // Start in the bedroom when a new player is created
+                gameEngine.visitRoom("Bedroom");
             }
             End();
 
@@ -541,7 +543,60 @@ int main(int, char**)
 
         EndChild();
 
-//---------------saving and quiting buttons----------------
+//---------------continue, saving and quiting buttons----------------
+
+        // Continue button to advance the scene/story (shows confirmation modal)
+        {
+            // determine next room based on current room enum
+            std::string nextRoomName;
+            bool hasNext = false;
+            switch (currentRoomEnum) {
+                case RoomEnum::ROOM_BEDROOM:
+                    nextRoomName = "Kitchen";
+                    hasNext = true;
+                    break;
+                case RoomEnum::ROOM_KITCHEN:
+                    nextRoomName = "Living Room";
+                    hasNext = true;
+                    break;
+                case RoomEnum::ROOM_LIVING:
+                default:
+                    hasNext = false;
+                    break;
+            }
+
+            static std::string pendingNextRoom = "";
+
+            if (hasNext) {
+                if (Button("Continue")) {
+                    // request confirmation before changing scene
+                    pendingNextRoom = nextRoomName;
+                    ImGui::OpenPopup("Confirm Transition");
+                }
+                SameLine();
+            }
+
+            // Confirmation modal
+            if (ImGui::BeginPopupModal("Confirm Transition", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+                ImGui::Text("Move to %s?", pendingNextRoom.c_str());
+                ImGui::Separator();
+                if (ImGui::Button("Yes", ImVec2(120,0))) {
+                    if (!pendingNextRoom.empty()) {
+                        gameEngine.visitRoom(pendingNextRoom);
+                        push_log(std::string("Continue: moving to ") + pendingNextRoom);
+                    }
+                    pendingNextRoom.clear();
+                    ImGui::CloseCurrentPopup();
+                }
+                ImGui::SameLine();
+                if (ImGui::Button("No", ImVec2(120,0))) {
+                    pendingNextRoom.clear();
+                    ImGui::CloseCurrentPopup();
+                }
+                ImGui::EndPopup();
+            }
+        }
+
         if(Button("Save"))
         {
             // open save slot chooser (three fixed slots)

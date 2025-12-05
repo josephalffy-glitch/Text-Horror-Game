@@ -21,23 +21,23 @@ Room::Room(string name, string description, vector<StorageLocation> storageLocat
 }
 
 // getters
-string Room::getName() {
+string Room::getName() const {
     return name;
 }
 
-string Room::getDescription() {
+string Room::getDescription() const {
     return description;
 }
 
-RoomEnum Room::getRoomEnum() {
+RoomEnum Room::getRoomEnum() const {
 	return roomEnum;
 }
 
-vector<StorageLocation> Room::getStorageLocations() {
+vector<StorageLocation> Room::getStorageLocations() const {
     return storageLocations;
 }
 
-vector<Item> Room::getItemsInLocation(string locationName) {
+vector<Item> Room::getItemsInLocation(string locationName) const {
     for (const auto& location : storageLocations) {
         if (location.name == locationName) {
             return location.items;
@@ -46,7 +46,7 @@ vector<Item> Room::getItemsInLocation(string locationName) {
     return vector<Item>();
 }
 
-bool Room::isVisited() {
+bool Room::isVisited() const {
     return visited;
 }
 
